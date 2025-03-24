@@ -8,106 +8,112 @@ import base64
 
 def show_emotion_summary(emotions_data):
     """Display emotion summary with enhanced visualization."""
-    if not emotions_data:
-        st.write("No emotion data available for this period.")
-        return
+    try:
+        if not emotions_data:
+            st.write("No emotion data available for this period.")
+            return
 
-    # Prepare data for visualization
-    emotions = {}
-    for entry_emotions in emotions_data:
-        if not entry_emotions:  # Skip empty emotion dictionaries
-            continue
-        for emotion, intensity in entry_emotions.items():
-            if emotion in emotions:
-                emotions[emotion] = max(emotions[emotion], intensity)  # Take the highest intensity
-            else:
-                emotions[emotion] = intensity
+        # Prepare data for visualization
+        emotions = {}
+        for entry_emotions in emotions_data:
+            if not entry_emotions or not isinstance(entry_emotions, dict):  # Skip empty or invalid emotion dictionaries
+                continue
+            for emotion, intensity in entry_emotions.items():
+                if emotion in emotions:
+                    emotions[emotion] = max(emotions[emotion], intensity)  # Take the highest intensity
+                else:
+                    emotions[emotion] = intensity
 
-    if emotions:
-        # Create a color map for emotions
-        emotion_colors = {
-            "joy": "#FFD700",  # Gold
-            "sadness": "#4682B4",  # Steel Blue
-            "anger": "#FF4500",  # Red Orange
-            "fear": "#800080",  # Purple
-            "hope": "#98FB98",  # Pale Green
-            "surprise": "#FF69B4",  # Hot Pink
-            "gratitude": "#DDA0DD",  # Plum
-            "pride": "#FF8C00",  # Dark Orange
-            "love": "#FF1493",  # Deep Pink
-            "anxiety": "#20B2AA"  # Light Sea Green
-        }
+        if emotions and len(emotions) > 0:
+            # Create a color map for emotions
+            emotion_colors = {
+                "joy": "#FFD700",  # Gold
+                "sadness": "#4682B4",  # Steel Blue
+                "anger": "#FF4500",  # Red Orange
+                "fear": "#800080",  # Purple
+                "hope": "#98FB98",  # Pale Green
+                "surprise": "#FF69B4",  # Hot Pink
+                "gratitude": "#DDA0DD",  # Plum
+                "pride": "#FF8C00",  # Dark Orange
+                "love": "#FF1493",  # Deep Pink
+                "anxiety": "#20B2AA"  # Light Sea Green
+            }
 
-        # Create emotion visualization
-        fig = go.Figure()
+            # Create emotion visualization
+            fig = go.Figure()
 
-        # Add radar chart
-        fig.add_trace(go.Scatterpolar(
-            r=list(emotions.values()),
-            theta=list(emotions.keys()),
-            fill='toself',
-            name='Emotions',
-            line_color='rgba(255, 165, 0, 0.8)',  # Orange with some transparency
-            fillcolor='rgba(255, 165, 0, 0.3)'  # Lighter orange with more transparency
-        ))
+            # Add radar chart
+            fig.add_trace(go.Scatterpolar(
+                r=list(emotions.values()),
+                theta=list(emotions.keys()),
+                fill='toself',
+                name='Emotions',
+                line_color='rgba(255, 165, 0, 0.8)',  # Orange with some transparency
+                fillcolor='rgba(255, 165, 0, 0.3)'  # Lighter orange with more transparency
+            ))
 
-        # Update layout
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[0, 100]
-                )
-            ),
-            showlegend=False,
-            title="Emotional Landscape",
-            height=400
-        )
+            # Update layout
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100]
+                    )
+                ),
+                showlegend=False,
+                title="Emotional Landscape",
+                height=400
+            )
 
-        # Display the radar chart
-        st.plotly_chart(fig, use_container_width=True)
+            # Display the radar chart
+            st.plotly_chart(fig, use_container_width=True)
 
-        # Display dominant emotions
-        col1, col2 = st.columns(2)
-        with col1:
-            # Get top 3 emotions
-            top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:3]
-            st.markdown("### Dominant Emotions")
-            for emotion, intensity in top_emotions:
-                st.markdown(
-                    f"<div style='padding: 10px; margin: 5px; background-color: {emotion_colors.get(emotion, '#808080')}30;'>"
-                    f"<strong>{emotion.capitalize()}:</strong> {intensity:.1f}%"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
+            # Display dominant emotions
+            col1, col2 = st.columns(2)
+            with col1:
+                # Get top 3 emotions
+                top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:3]
+                st.markdown("### Dominant Emotions")
+                for emotion, intensity in top_emotions:
+                    st.markdown(
+                        f"<div style='padding: 10px; margin: 5px; background-color: {emotion_colors.get(emotion, '#808080')}30;'>"
+                        f"<strong>{emotion.capitalize()}:</strong> {intensity:.1f}%"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
 
-        with col2:
-            # Calculate emotional balance
-            positive_emotions = sum(emotions[e] for e in ['joy', 'hope', 'gratitude', 'pride', 'love'] if e in emotions)
-            negative_emotions = sum(emotions[e] for e in ['sadness', 'anger', 'fear', 'anxiety'] if e in emotions)
-            neutral_emotions = sum(emotions[e] for e in ['surprise'] if e in emotions)
-            
-            total = positive_emotions + negative_emotions + neutral_emotions
-            if total > 0:
-                st.markdown("### Emotional Balance")
-                st.markdown(
-                    f"<div style='padding: 10px; margin: 5px; background-color: #98FB9830;'>"
-                    f"<strong>Positive:</strong> {(positive_emotions/total)*100:.1f}%"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
-                st.markdown(
-                    f"<div style='padding: 10px; margin: 5px; background-color: #4682B430;'>"
-                    f"<strong>Negative:</strong> {(negative_emotions/total)*100:.1f}%"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
-                st.markdown(
-                    f"<div style='padding: 10px; margin: 5px; background-color: #DDA0DD30;'>"
-                    f"<strong>Neutral:</strong> {(neutral_emotions/total)*100:.1f}%"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
+            with col2:
+                # Calculate emotional balance
+                positive_emotions = sum(emotions[e] for e in ['joy', 'hope', 'gratitude', 'pride', 'love'] if e in emotions)
+                negative_emotions = sum(emotions[e] for e in ['sadness', 'anger', 'fear', 'anxiety'] if e in emotions)
+                neutral_emotions = sum(emotions[e] for e in ['surprise'] if e in emotions)
+                
+                total = positive_emotions + negative_emotions + neutral_emotions
+                if total > 0:
+                    st.markdown("### Emotional Balance")
+                    st.markdown(
+                        f"<div style='padding: 10px; margin: 5px; background-color: #98FB9830;'>"
+                        f"<strong>Positive:</strong> {(positive_emotions/total)*100:.1f}%"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                    st.markdown(
+                        f"<div style='padding: 10px; margin: 5px; background-color: #4682B430;'>"
+                        f"<strong>Negative:</strong> {(negative_emotions/total)*100:.1f}%"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                    st.markdown(
+                        f"<div style='padding: 10px; margin: 5px; background-color: #DDA0DD30;'>"
+                        f"<strong>Neutral:</strong> {(neutral_emotions/total)*100:.1f}%"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.info("No emotional data available for the selected period.")
+    except Exception as e:
+        st.error(f"Error displaying emotion summary: {str(e)}")
+        st.info("No emotional data available for the selected period.")
 
 def show_weekly_summary():
     st.header("Weekly Summary")
@@ -136,17 +142,25 @@ def show_weekly_summary():
     
     try:
         # Try to get actual min/max dates from journal entries if they exist
-        if st.session_state.journal_entries:
-            all_dates = [datetime.strptime(entry['date'], '%Y-%m-%d').date() 
-                        for entry in st.session_state.journal_entries]
-            if all_dates:
+        if hasattr(st.session_state, 'journal_entries') and st.session_state.journal_entries:
+            # Check if there are any journal entries with valid dates
+            all_dates = []
+            for entry in st.session_state.journal_entries:
+                try:
+                    entry_date = datetime.strptime(entry.get('date', ''), '%Y-%m-%d').date()
+                    all_dates.append(entry_date)
+                except (ValueError, TypeError):
+                    continue
+                    
+            if all_dates:  # Only process if we have valid dates
                 min_date = min(all_dates)
                 max_date = max(all_dates)
                 
                 # Adjust max_date to today if it's in the future
                 if max_date > datetime.now().date():
                     max_date = datetime.now().date()
-    except (ValueError, KeyError, AttributeError):
+    except Exception as e:
+        st.warning(f"Could not determine date range from journal entries: {str(e)}")
         # Fallback to defaults if there's any error
         pass
     
@@ -289,13 +303,18 @@ def show_weekly_summary():
                 # Display emotions if available
                 if 'emotions' in sentiment and sentiment['emotions']:
                     emotions = sentiment['emotions']
-                    if emotions and len(emotions) > 0:  
+                    # Double-check that emotions is not empty
+                    if emotions and isinstance(emotions, dict) and len(emotions) > 0:
                         try:
                             dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
                             st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
-                        except ValueError:
-                            # Handle the case where emotions is empty
-                            pass
+                        except (ValueError, KeyError, TypeError):
+                            # Handle the case where emotions is empty or invalid
+                            st.markdown("**Emotion data:** Not available")
+                    else:
+                        st.markdown("**Emotion data:** Not available")
+                else:
+                    st.markdown("**Emotion data:** Not available")
                 
                 # Display themes if available
                 if 'themes' in entry and entry['themes']:

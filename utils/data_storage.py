@@ -55,30 +55,57 @@ def save_journal_entry(module, lesson, prompt, content, sentiment_data, themes):
         sentiment_data (dict): Sentiment analysis results
         themes (list): Extracted themes from the content
     """
-    entry = {
-        'id': len(st.session_state.journal_entries) + 1,
-        'date': datetime.now().strftime('%Y-%m-%d'),
-        'time': datetime.now().strftime('%H:%M'),
-        'module': module,
-        'lesson': lesson,
-        'prompt': prompt,
-        'content': content,
-        'sentiment': sentiment_data,
-        'themes': themes
-    }
-    
-    st.session_state.journal_entries.append(entry)
-    
-    # Mark the lesson as completed
-    lesson_key = f"{module}-{lesson}"
-    if 'completed_lessons' not in st.session_state:
-        st.session_state.completed_lessons = set()
-    st.session_state.completed_lessons.add(lesson_key)
-    
-    # Update growth metrics based on journaling activity
-    update_growth_metrics(sentiment_data)
-    
-    return entry
+    try:
+        # Ensure sentiment_data contains valid emotions
+        if sentiment_data is None:
+            sentiment_data = {'category': 'neutral', 'emotions': {}}
+        
+        # Ensure there's at least one emotion to prevent max() errors later
+        if 'emotions' not in sentiment_data or not sentiment_data['emotions']:
+            sentiment_data['emotions'] = {'neutral': 50}
+            
+        entry = {
+            'id': len(st.session_state.journal_entries) + 1,
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M'),
+            'module': module,
+            'lesson': lesson,
+            'prompt': prompt,
+            'content': content,
+            'sentiment': sentiment_data,
+            'themes': themes if themes else []
+        }
+        
+        # Initialize journal_entries if it doesn't exist
+        if 'journal_entries' not in st.session_state:
+            st.session_state.journal_entries = []
+            
+        st.session_state.journal_entries.append(entry)
+        
+        # Mark the lesson as completed
+        lesson_key = f"{module}-{lesson}"
+        if 'completed_lessons' not in st.session_state:
+            st.session_state.completed_lessons = set()
+        st.session_state.completed_lessons.add(lesson_key)
+        
+        # Update growth metrics based on journaling activity
+        update_growth_metrics(sentiment_data)
+        
+        return entry
+    except Exception as e:
+        st.error(f"Error saving journal entry: {str(e)}")
+        # Return a default entry to prevent further errors
+        return {
+            'id': len(st.session_state.get('journal_entries', [])) + 1,
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M'),
+            'module': module,
+            'lesson': lesson,
+            'prompt': prompt,
+            'content': content,
+            'sentiment': {'category': 'neutral', 'emotions': {'neutral': 50}},
+            'themes': []
+        }
 
 def update_growth_metrics(sentiment_data):
     """
