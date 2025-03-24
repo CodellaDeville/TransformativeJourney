@@ -138,10 +138,11 @@ def show_weekly_summary():
                 st.markdown(f"**Sentiment:** {sentiment['category'].capitalize()}")
                 
                 # Display emotions if available
-                if 'emotions' in sentiment:
+                if 'emotions' in sentiment and sentiment['emotions']:
                     emotions = sentiment['emotions']
-                    dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
-                    st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
+                    if emotions:
+                        dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
+                        st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
                 
                 # Display themes if available
                 if 'themes' in entry and entry['themes']:

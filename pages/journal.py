@@ -223,28 +223,38 @@ def show_journal():
         
         # Save button
         if st.button("Save Journal Entry"):
-            # Save the entry
-            save_journal_entry(
-                module=module,
-                lesson=lesson,
-                prompt=prompt,
-                content=content,
-                sentiment_data=sentiment_data,
-                themes=themes
-            )
-            
-            # Update current module and lesson
-            if lesson < 4:
-                st.session_state.current_lesson = lesson + 1
-            elif module < 5:
-                st.session_state.current_module = module + 1
-                st.session_state.current_lesson = 1
-            
-            st.success("Journal entry saved successfully!")
-            
-            # Add continue button that forces a page reload
-            if st.button("Continue to Next Lesson"):
-                st.rerun()
+            # Check if content has been analyzed
+            if not content.strip():
+                st.error("Please write a journal entry before saving.")
+            elif not hasattr(st.session_state, "last_analyzed_content") or st.session_state.last_analyzed_content != content:
+                st.error("Please analyze your entry before saving.")
+            else:
+                # Get the analyzed data from session state
+                sentiment_data = st.session_state.last_sentiment_data
+                themes = st.session_state.last_themes
+                
+                # Save the entry
+                save_journal_entry(
+                    module=module,
+                    lesson=lesson,
+                    prompt=prompt,
+                    content=content,
+                    sentiment_data=sentiment_data,
+                    themes=themes
+                )
+                
+                # Update current module and lesson
+                if lesson < 4:
+                    st.session_state.current_lesson = lesson + 1
+                elif module < 5:
+                    st.session_state.current_module = module + 1
+                    st.session_state.current_lesson = 1
+                
+                st.success("Journal entry saved successfully!")
+                
+                # Add continue button that forces a page reload
+                if st.button("Continue to Next Lesson"):
+                    st.rerun()
 
 def get_module_title(module_number):
     """Return the title for a module."""
