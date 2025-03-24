@@ -15,6 +15,8 @@ def show_emotion_summary(emotions_data):
     # Prepare data for visualization
     emotions = {}
     for entry_emotions in emotions_data:
+        if not entry_emotions:  # Skip empty emotion dictionaries
+            continue
         for emotion, intensity in entry_emotions.items():
             if emotion in emotions:
                 emotions[emotion] = max(emotions[emotion], intensity)  # Take the highest intensity
@@ -189,12 +191,13 @@ def show_weekly_summary():
         if 'sentiment' in entry and 'emotions' in entry['sentiment']:
             emotions = entry['sentiment']['emotions']
             
-            for emotion, value in emotions.items():
-                emotion_data.append({
-                    'Date': date,
-                    'Emotion': emotion.capitalize(),
-                    'Value': value
-                })
+            if emotions and len(emotions) > 0:  # Check if emotions dictionary is not empty
+                for emotion, value in emotions.items():
+                    emotion_data.append({
+                        'Date': date,
+                        'Emotion': emotion.capitalize(),
+                        'Value': value
+                    })
     
     if emotion_data:
         # Create DataFrame for plotting
@@ -256,8 +259,12 @@ def show_weekly_summary():
                 if 'emotions' in sentiment and sentiment['emotions']:
                     emotions = sentiment['emotions']
                     if emotions and len(emotions) > 0:  
-                        dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
-                        st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
+                        try:
+                            dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
+                            st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
+                        except ValueError:
+                            # Handle the case where emotions is empty
+                            pass
                 
                 # Display themes if available
                 if 'themes' in entry and entry['themes']:
