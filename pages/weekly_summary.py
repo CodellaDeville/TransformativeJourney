@@ -6,6 +6,107 @@ import pandas as pd
 from utils.pdf_generator import PDFGenerator
 import base64
 
+def show_emotion_summary(emotions_data):
+    """Display emotion summary with enhanced visualization."""
+    if not emotions_data:
+        st.write("No emotion data available for this period.")
+        return
+
+    # Prepare data for visualization
+    emotions = {}
+    for entry_emotions in emotions_data:
+        for emotion, intensity in entry_emotions.items():
+            if emotion in emotions:
+                emotions[emotion] = max(emotions[emotion], intensity)  # Take the highest intensity
+            else:
+                emotions[emotion] = intensity
+
+    if emotions:
+        # Create a color map for emotions
+        emotion_colors = {
+            "joy": "#FFD700",  # Gold
+            "sadness": "#4682B4",  # Steel Blue
+            "anger": "#FF4500",  # Red Orange
+            "fear": "#800080",  # Purple
+            "hope": "#98FB98",  # Pale Green
+            "surprise": "#FF69B4",  # Hot Pink
+            "gratitude": "#DDA0DD",  # Plum
+            "pride": "#FF8C00",  # Dark Orange
+            "love": "#FF1493",  # Deep Pink
+            "anxiety": "#20B2AA"  # Light Sea Green
+        }
+
+        # Create emotion visualization
+        fig = go.Figure()
+
+        # Add radar chart
+        fig.add_trace(go.Scatterpolar(
+            r=list(emotions.values()),
+            theta=list(emotions.keys()),
+            fill='toself',
+            name='Emotions',
+            line_color='rgba(255, 165, 0, 0.8)',  # Orange with some transparency
+            fillcolor='rgba(255, 165, 0, 0.3)'  # Lighter orange with more transparency
+        ))
+
+        # Update layout
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100]
+                )
+            ),
+            showlegend=False,
+            title="Emotional Landscape",
+            height=400
+        )
+
+        # Display the radar chart
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Display dominant emotions
+        col1, col2 = st.columns(2)
+        with col1:
+            # Get top 3 emotions
+            top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:3]
+            st.markdown("### Dominant Emotions")
+            for emotion, intensity in top_emotions:
+                st.markdown(
+                    f"<div style='padding: 10px; margin: 5px; background-color: {emotion_colors.get(emotion, '#808080')}30;'>"
+                    f"<strong>{emotion.capitalize()}:</strong> {intensity:.1f}%"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+        with col2:
+            # Calculate emotional balance
+            positive_emotions = sum(emotions[e] for e in ['joy', 'hope', 'gratitude', 'pride', 'love'] if e in emotions)
+            negative_emotions = sum(emotions[e] for e in ['sadness', 'anger', 'fear', 'anxiety'] if e in emotions)
+            neutral_emotions = sum(emotions[e] for e in ['surprise'] if e in emotions)
+            
+            total = positive_emotions + negative_emotions + neutral_emotions
+            if total > 0:
+                st.markdown("### Emotional Balance")
+                st.markdown(
+                    f"<div style='padding: 10px; margin: 5px; background-color: #98FB9830;'>"
+                    f"<strong>Positive:</strong> {(positive_emotions/total)*100:.1f}%"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                st.markdown(
+                    f"<div style='padding: 10px; margin: 5px; background-color: #4682B430;'>"
+                    f"<strong>Negative:</strong> {(negative_emotions/total)*100:.1f}%"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                st.markdown(
+                    f"<div style='padding: 10px; margin: 5px; background-color: #DDA0DD30;'>"
+                    f"<strong>Neutral:</strong> {(neutral_emotions/total)*100:.1f}%"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
 def show_weekly_summary():
     st.header("Weekly Summary")
     
@@ -47,6 +148,16 @@ def show_weekly_summary():
     if not entries:
         st.info(f"No journal entries found between {start_date.strftime('%b %d, %Y')} and {end_date.strftime('%b %d, %Y')}.")
         return
+    
+    # Collect emotions data from all entries
+    emotions_data = []
+    for entry in entries:
+        if 'sentiment' in entry and 'emotions' in entry['sentiment']:
+            emotions_data.append(entry['sentiment']['emotions'])
+    
+    # Show emotion summary
+    st.header("Emotional Overview")
+    show_emotion_summary(emotions_data)
     
     # Display summary metrics
     st.markdown("---")
@@ -135,7 +246,11 @@ def show_weekly_summary():
             # Display sentiment if available
             if 'sentiment' in entry:
                 sentiment = entry['sentiment']
-                st.markdown(f"**Sentiment:** {sentiment['category'].capitalize()}")
+                category = sentiment['category'].lower()
+                display_category = "positive" if category in ['very positive', 'positive'] else \
+                                 "negative" if category in ['very negative', 'negative'] else \
+                                 "neutral"
+                st.markdown(f"**Sentiment:** {display_category.capitalize()}")
                 
                 # Display emotions if available
                 if 'emotions' in sentiment and sentiment['emotions']:
@@ -157,14 +272,20 @@ def show_weekly_summary():
     if entries:
         # Calculate emotional trends
         emotion_averages = {}
-        sentiment_categories = {"positive": 0, "negative": 0, "neutral": 0}
+        sentiment_categories = {"positive": 0, "neutral": 0, "negative": 0}
         entry_count = len(entries)
         
         for entry in entries:
             # Track sentiment categories
             if 'sentiment' in entry and 'category' in entry['sentiment']:
-                category = entry['sentiment']['category']
-                sentiment_categories[category] += 1
+                category = entry['sentiment']['category'].lower()
+                # Map legacy categories to new ones
+                if category in ['very positive', 'positive']:
+                    sentiment_categories['positive'] += 1
+                elif category in ['very negative', 'negative']:
+                    sentiment_categories['negative'] += 1
+                else:
+                    sentiment_categories['neutral'] += 1
             
             # Track emotion intensities
             if 'sentiment' in entry and 'emotions' in entry['sentiment']:
@@ -238,13 +359,13 @@ def show_weekly_summary():
             st.plotly_chart(fig, use_container_width=True)
             
             # Add interpretation based on dominant sentiment
-            dominant_sentiment = sorted_categories[0] if sorted_categories else "Neutral"
+            dominant_sentiment = sorted_categories[0].lower() if sorted_categories else "neutral"
             
-            if dominant_sentiment == "Positive":
+            if dominant_sentiment == "positive":
                 st.markdown("📈 **Mood Insight:** Your journal entries show a predominantly positive outlook, which suggests you're in a creative or resourceful state of mind. This is an excellent time to set goals and build on your momentum.")
-            elif dominant_sentiment == "Negative":
+            elif dominant_sentiment == "negative":
                 st.markdown("🔍 **Mood Insight:** Your entries reflect more challenging emotions, which often indicate important areas for growth and healing. These feelings can provide valuable information about your needs and values.")
-            else:  # Neutral
+            else:  # neutral
                 st.markdown("⚖️ **Mood Insight:** Your entries show a balanced emotional state, which can indicate either emotional stability or possibly some emotional detachment. This could be a good time for objective reflection.")
         
         # Emotional insight based on specific emotions

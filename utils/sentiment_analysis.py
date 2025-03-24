@@ -52,21 +52,26 @@ class SentimentAnalyzer:
                     "sadness": 0.0,
                     "anger": 0.0,
                     "fear": 0.0,
-                    "hope": 0.0
+                    "hope": 0.0,
+                    "surprise": 0.0,
+                    "gratitude": 0.0,
+                    "pride": 0.0,
+                    "love": 0.0,
+                    "anxiety": 0.0
                 }
             }
             
         scores = self.sid.polarity_scores(text)
         
-        # Categorize the sentiment
-        if scores['compound'] >= 0.05:
+        # Enhanced sentiment categorization with balanced thresholds
+        if scores['compound'] >= 0.3:
             category = "positive"
-        elif scores['compound'] <= -0.05:
+        elif scores['compound'] <= -0.3:
             category = "negative"
         else:
             category = "neutral"
             
-        # Detect specific emotions
+        # Detect specific emotions with enhanced context
         emotions = self.detect_emotions(text)
         
         results = {
@@ -84,32 +89,66 @@ class SentimentAnalyzer:
         """
         Detect specific emotions in the text using an enhanced keyword and pattern approach.
         """
-        # Expanded emotion keywords with synonyms and related phrases
+        # Expanded emotion keywords with synonyms, phrases, and contextual patterns
         emotion_keywords = {
             "joy": [
                 "happy", "glad", "joy", "delight", "content", "pleased", "elated", "thrilled", "excited",
                 "wonderful", "amazing", "fantastic", "great", "blessed", "grateful", "thankful", "peaceful",
-                "love", "loving", "enjoyed", "enjoy", "smile", "laughed", "laugh", "celebrating"
+                "love", "loving", "enjoyed", "enjoy", "smile", "laughed", "laugh", "celebrating",
+                "ecstatic", "overjoyed", "jubilant", "blissful", "cheerful", "radiant", "beaming",
+                "accomplished", "satisfied", "fulfilled", "triumphant", "victorious", "playful", "giddy"
             ],
             "sadness": [
                 "sad", "unhappy", "miserable", "heartbroken", "gloomy", "depressed", "melancholy", "grief",
                 "lonely", "alone", "lost", "empty", "hurt", "pain", "suffering", "disappointed", "miss",
-                "missing", "regret", "hopeless", "despair", "crying", "cried", "tears"
+                "missing", "regret", "hopeless", "despair", "crying", "cried", "tears", "devastated",
+                "heartache", "sorrow", "mourning", "grieving", "broken", "crushed", "desolate", "down",
+                "blue", "heavy-hearted", "weeping", "sobbing", "melancholic", "forlorn"
             ],
             "anger": [
                 "angry", "mad", "furious", "irritated", "annoyed", "enraged", "frustrated", "outraged",
                 "hate", "hatred", "resent", "resentful", "bitter", "disgusted", "fed up", "upset",
-                "hostile", "rage", "fuming", "livid", "offended", "unfair", "wrong"
+                "hostile", "rage", "fuming", "livid", "offended", "unfair", "wrong", "infuriated",
+                "seething", "irate", "incensed", "indignant", "provoked", "agitated", "exasperated",
+                "disgruntled", "resentment", "contempt", "irritable"
             ],
             "fear": [
                 "afraid", "scared", "fearful", "anxious", "worried", "terrified", "panicked", "nervous",
                 "dread", "uneasy", "stress", "stressed", "overwhelmed", "insecure", "doubt", "uncertain",
-                "hesitant", "apprehensive", "concern", "concerned", "panic", "terror", "frightened"
+                "hesitant", "apprehensive", "concern", "concerned", "panic", "terror", "frightened",
+                "paranoid", "petrified", "horrified", "alarmed", "threatened", "intimidated",
+                "unsettled", "disturbed", "trembling", "shaking", "tense"
             ],
             "hope": [
                 "hope", "hopeful", "optimistic", "looking forward", "anticipate", "expect", "faith", "trust",
                 "believe", "believing", "confident", "determined", "motivated", "inspired", "eager",
-                "excited", "positive", "better", "improve", "improving", "progress", "growing"
+                "excited", "positive", "better", "improve", "improving", "progress", "growing",
+                "aspiring", "promising", "encouraging", "reassuring", "uplifting", "brighter", "possibility"
+            ],
+            "surprise": [
+                "surprised", "shocked", "amazed", "astonished", "stunned", "startled", "unexpected",
+                "wonder", "awe", "speechless", "mindblown", "flabbergasted", "dumbfounded",
+                "incredible", "unbelievable", "wow", "remarkable", "extraordinary", "sudden", "revelation"
+            ],
+            "gratitude": [
+                "grateful", "thankful", "appreciative", "blessed", "appreciate", "indebted",
+                "touched", "moved", "humbled", "honored", "fortunate", "lucky", "privileged",
+                "recognition", "appreciation", "valued", "acknowledged"
+            ],
+            "pride": [
+                "proud", "accomplished", "confident", "successful", "achieved", "triumph",
+                "victory", "mastered", "earned", "deserved", "honored", "respected",
+                "achievement", "excellence", "satisfaction", "impressive"
+            ],
+            "love": [
+                "love", "adore", "cherish", "treasure", "devoted", "affection", "fond",
+                "warmth", "tenderness", "attachment", "caring", "romantic", "passionate",
+                "intimate", "connected", "bonded", "close", "dear", "beloved"
+            ],
+            "anxiety": [
+                "anxious", "worried", "nervous", "tense", "restless", "uneasy", "jittery",
+                "edgy", "agitated", "frazzled", "stressed", "pressured", "overwhelmed",
+                "apprehensive", "troubled", "distressed", "fretful", "bothered"
             ]
         }
         
@@ -119,56 +158,76 @@ class SentimentAnalyzer:
         
         # Initialize emotion tracking
         emotion_scores = {emotion: 0.0 for emotion in emotion_keywords}
-        emotion_contexts = {emotion: [] for emotion in emotion_keywords}
         
-        # Analyze each sentence for emotions
+        # Context modifiers for emotion intensity
+        context_modifiers = {
+            "very": 1.3,
+            "extremely": 1.5,
+            "somewhat": 0.8,
+            "slightly": 0.6,
+            "really": 1.2,
+            "deeply": 1.3
+        }
+        
+        # Process each sentence for emotions
         for sentence in sentences:
-            words = []
-            # Simple word tokenization
-            for word in sentence.split():
-                # Remove punctuation
-                word = ''.join(c for c in word if c.isalpha())
-                if word and word not in self.stop_words:
-                    words.append(word)
+            words = sentence.split()
             
-            # Check for emotion keywords in each sentence
-            sentence_emotions = {emotion: 0 for emotion in emotion_keywords}
-            for word in words:
+            # Check for negations
+            negation_active = False
+            for i, word in enumerate(words):
+                clean_word = ''.join(c for c in word if c.isalpha())
+                if clean_word in ["not", "don't", "doesn't", "didn't", "no", "never"]:
+                    negation_active = True
+                    break
+            
+            # Process words in the sentence
+            for i, word in enumerate(words):
+                clean_word = ''.join(c for c in word if c.isalpha())
+                if not clean_word or clean_word in self.stop_words:
+                    continue
+                
+                # Apply intensity modifier
+                intensity = 1.0
+                if i > 0:
+                    prev_word = ''.join(c for c in words[i-1] if c.isalpha())
+                    if prev_word in context_modifiers:
+                        intensity = context_modifiers[prev_word]
+                
+                # If negation is active, flip the emotion valence
+                if negation_active:
+                    intensity *= -0.5  # Reduced negative impact
+                
+                # Check for emotion keywords
                 for emotion, keywords in emotion_keywords.items():
-                    if word in keywords:
-                        sentence_emotions[emotion] += 1
-                        # Store context if emotion is found
-                        if sentence_emotions[emotion] == 1:  # Only store once per emotion per sentence
-                            emotion_contexts[emotion].append(sentence)
+                    if clean_word in keywords:
+                        emotion_scores[emotion] += intensity
+                
+                # Check for two-word phrases
+                if i < len(words) - 1:
+                    next_word = ''.join(c for c in words[i+1] if c.isalpha())
+                    phrase = f"{clean_word} {next_word}"
+                    for emotion, keywords in emotion_keywords.items():
+                        if phrase in keywords:
+                            emotion_scores[emotion] += (intensity * 1.2)  # Higher weight for phrases
+        
+        # Normalize and select top emotions
+        if sum(emotion_scores.values()) > 0:
+            # Sort emotions by score
+            sorted_emotions = sorted(emotion_scores.items(), key=lambda x: x[1], reverse=True)
             
-            # Update overall scores
-            for emotion, count in sentence_emotions.items():
-                if count > 0:
-                    # Weight emotions by sentence position (later sentences slightly more weight)
-                    position_weight = 1 + (sentences.index(sentence) / len(sentences)) * 0.2
-                    emotion_scores[emotion] += count * position_weight
-        
-        # Calculate final emotion intensities
-        total_score = max(sum(emotion_scores.values()), 1)  # Avoid division by zero
-        emotions = {
-            emotion: (score / total_score) * 100
-            for emotion, score in emotion_scores.items()
-        }
-        
-        # Normalize intensities to ensure they sum to 100%
-        total_intensity = sum(emotions.values())
-        if total_intensity > 0:
-            emotions = {
-                emotion: (intensity / total_intensity) * 100
-                for emotion, intensity in emotions.items()
-            }
-        
-        # Filter out low-intensity emotions (less than 5%)
-        emotions = {
-            emotion: intensity
-            for emotion, intensity in emotions.items()
-            if intensity >= 5.0
-        }
+            # Select top emotions with positive scores
+            emotions = {}
+            for emotion, score in sorted_emotions[:3]:  # Top 3 emotions
+                if score > 0:
+                    emotions[emotion] = score
+            
+            # Normalize to percentages
+            if emotions:
+                total = sum(emotions.values())
+                emotions = {k: (v/total) * 100 for k, v in emotions.items()}
+        else:
+            emotions = {}
         
         return emotions
     
