@@ -243,17 +243,17 @@ def show_journal():
                     themes=themes
                 )
                 
-                # Update current module and lesson
-                if lesson < 4:
-                    st.session_state.current_lesson = lesson + 1
-                elif module < 5:
-                    st.session_state.current_module = module + 1
-                    st.session_state.current_lesson = 1
-                
                 st.success("Journal entry saved successfully!")
                 
-                # Add continue button that forces a page reload
+                # Add continue button that forces a page reload when clicked
                 if st.button("Continue to Next Lesson"):
+                    # Only update the module and lesson when the continue button is clicked
+                    if lesson < 4:
+                        st.session_state.current_lesson = lesson + 1
+                    elif module < 5:
+                        st.session_state.current_module = module + 1
+                        st.session_state.current_lesson = 1
+                    
                     st.rerun()
 
 def get_module_title(module_number):
