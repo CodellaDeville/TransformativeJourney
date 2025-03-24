@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff7043" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="1" />
+    </linearGradient>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7b1fa2" stop-opacity="1" />
+      <stop offset="100%" stop-color="#9c27b0" stop-opacity="1" />
+    </linearGradient>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#303f9f" stop-opacity="1" />
+      <stop offset="100%" stop-color="#3f51b5" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Orange spiral -->
+  <path d="M400,400 
+    C400,380 420,360 440,360 
+    C480,360 500,400 500,440 
+    C500,500 440,540 380,540 
+    C300,540 240,480 240,400 
+    C240,300 320,220 400,220 
+    C500,220 600,320 600,400 
+    C600,500 500,620 400,620 
+    C280,620 160,500 160,400 
+    C160,280 280,140 400,140 
+    C540,140 680,280 680,400"
+    fill="none" stroke="url(#orangeGradient)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Purple spiral -->
+  <path d="M400,400 
+    C400,360 440,320 480,320 
+    C540,320 580,380 580,440 
+    C580,520 500,580 420,580 
+    C320,580 240,500 240,400 
+    C240,280 340,180 460,180 
+    C600,180 700,300 700,420"
+    fill="none" stroke="url(#purpleGradient)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Blue spiral -->
+  <path d="M400,400 
+    C400,340 460,280 520,280 
+    C600,280 660,340 660,420 
+    C660,520 560,620 460,620 
+    C340,620 220,500 220,380 
+    C220,240 340,120 480,120"
+    fill="none" stroke="url(#blueGradient)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
