@@ -71,6 +71,8 @@ def save_journal_entry(module, lesson, prompt, content, sentiment_data, themes):
     
     # Mark the lesson as completed
     lesson_key = f"{module}-{lesson}"
+    if 'completed_lessons' not in st.session_state:
+        st.session_state.completed_lessons = set()
     st.session_state.completed_lessons.add(lesson_key)
     
     # Update growth metrics based on journaling activity

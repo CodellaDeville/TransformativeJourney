@@ -82,38 +82,92 @@ class SentimentAnalyzer:
     
     def detect_emotions(self, text):
         """
-        Detect specific emotions in the text.
+        Detect specific emotions in the text using an enhanced keyword and pattern approach.
         """
-        # Simple keyword-based emotion detection
+        # Expanded emotion keywords with synonyms and related phrases
         emotion_keywords = {
-            "joy": ["happy", "glad", "joy", "delight", "content", "pleased", "elated", "thrilled", "excited"],
-            "sadness": ["sad", "unhappy", "miserable", "heartbroken", "gloomy", "depressed", "melancholy", "grief"],
-            "anger": ["angry", "mad", "furious", "irritated", "annoyed", "enraged", "frustrated", "outraged"],
-            "fear": ["afraid", "scared", "fearful", "anxious", "worried", "terrified", "panicked", "nervous"],
-            "hope": ["hope", "hopeful", "optimistic", "looking forward", "anticipate", "expect", "faith", "trust"]
+            "joy": [
+                "happy", "glad", "joy", "delight", "content", "pleased", "elated", "thrilled", "excited",
+                "wonderful", "amazing", "fantastic", "great", "blessed", "grateful", "thankful", "peaceful",
+                "love", "loving", "enjoyed", "enjoy", "smile", "laughed", "laugh", "celebrating"
+            ],
+            "sadness": [
+                "sad", "unhappy", "miserable", "heartbroken", "gloomy", "depressed", "melancholy", "grief",
+                "lonely", "alone", "lost", "empty", "hurt", "pain", "suffering", "disappointed", "miss",
+                "missing", "regret", "hopeless", "despair", "crying", "cried", "tears"
+            ],
+            "anger": [
+                "angry", "mad", "furious", "irritated", "annoyed", "enraged", "frustrated", "outraged",
+                "hate", "hatred", "resent", "resentful", "bitter", "disgusted", "fed up", "upset",
+                "hostile", "rage", "fuming", "livid", "offended", "unfair", "wrong"
+            ],
+            "fear": [
+                "afraid", "scared", "fearful", "anxious", "worried", "terrified", "panicked", "nervous",
+                "dread", "uneasy", "stress", "stressed", "overwhelmed", "insecure", "doubt", "uncertain",
+                "hesitant", "apprehensive", "concern", "concerned", "panic", "terror", "frightened"
+            ],
+            "hope": [
+                "hope", "hopeful", "optimistic", "looking forward", "anticipate", "expect", "faith", "trust",
+                "believe", "believing", "confident", "determined", "motivated", "inspired", "eager",
+                "excited", "positive", "better", "improve", "improving", "progress", "growing"
+            ]
         }
         
-        # Normalize text and simple tokenization without NLTK
+        # Normalize text and split into sentences
         text = text.lower()
-        # Simple word tokenization by spaces and removing punctuation
-        words = []
-        for word in text.split():
-            # Remove punctuation
-            word = ''.join(c for c in word if c.isalpha())
-            if word and word not in self.stop_words:
-                words.append(word)
+        sentences = [s.strip() for s in re.split('[.!?]+', text) if s.strip()]
         
-        # Count emotion keywords
-        emotion_counts = {emotion: 0 for emotion in emotion_keywords}
-        for word in words:
-            for emotion, keywords in emotion_keywords.items():
-                if word in keywords:
-                    emotion_counts[emotion] += 1
+        # Initialize emotion tracking
+        emotion_scores = {emotion: 0.0 for emotion in emotion_keywords}
+        emotion_contexts = {emotion: [] for emotion in emotion_keywords}
         
-        # Calculate percentages
+        # Analyze each sentence for emotions
+        for sentence in sentences:
+            words = []
+            # Simple word tokenization
+            for word in sentence.split():
+                # Remove punctuation
+                word = ''.join(c for c in word if c.isalpha())
+                if word and word not in self.stop_words:
+                    words.append(word)
+            
+            # Check for emotion keywords in each sentence
+            sentence_emotions = {emotion: 0 for emotion in emotion_keywords}
+            for word in words:
+                for emotion, keywords in emotion_keywords.items():
+                    if word in keywords:
+                        sentence_emotions[emotion] += 1
+                        # Store context if emotion is found
+                        if sentence_emotions[emotion] == 1:  # Only store once per emotion per sentence
+                            emotion_contexts[emotion].append(sentence)
+            
+            # Update overall scores
+            for emotion, count in sentence_emotions.items():
+                if count > 0:
+                    # Weight emotions by sentence position (later sentences slightly more weight)
+                    position_weight = 1 + (sentences.index(sentence) / len(sentences)) * 0.2
+                    emotion_scores[emotion] += count * position_weight
+        
+        # Calculate final emotion intensities
+        total_score = max(sum(emotion_scores.values()), 1)  # Avoid division by zero
         emotions = {
-            emotion: count / max(len(words), 1) * 100
-            for emotion, count in emotion_counts.items()
+            emotion: (score / total_score) * 100
+            for emotion, score in emotion_scores.items()
+        }
+        
+        # Normalize intensities to ensure they sum to 100%
+        total_intensity = sum(emotions.values())
+        if total_intensity > 0:
+            emotions = {
+                emotion: (intensity / total_intensity) * 100
+                for emotion, intensity in emotions.items()
+            }
+        
+        # Filter out low-intensity emotions (less than 5%)
+        emotions = {
+            emotion: intensity
+            for emotion, intensity in emotions.items()
+            if intensity >= 5.0
         }
         
         return emotions
@@ -163,69 +217,62 @@ class SentimentAnalyzer:
         
         suggestions = []
         
-        # Opening reflection based on sentiment category
-        if category == "negative":
-            if compound_score < -0.5:  # Strongly negative
-                suggestions.append("I notice significant emotional weight in your entry. Remember that challenging feelings often contain important wisdom.")
-            else:
-                suggestions.append("I notice some challenging emotions in your entry. How might these feelings be guiding you toward greater awareness?")
-            
-            # Specific emotion-based reflections
-            if dominant_emotion == "sadness":
-                suggestions.append("Your sadness may be highlighting something you deeply value. What matters most to you in this situation?")
-                suggestions.append("What form of compassion or gentle support would be most helpful for you right now?")
-                if secondary_emotion == "hope":
-                    suggestions.append("I see both sadness and hope in your entry. How might this combination be showing you a path forward?")
-            
-            elif dominant_emotion == "anger":
-                suggestions.append("Your anger appears to be protecting something important. What boundary or value might it be defending?")
-                suggestions.append("How might you channel this energetic emotion into constructive action that honors your needs?")
-                if secondary_emotion == "fear":
-                    suggestions.append("The combination of anger and fear often appears when something deeply important feels threatened. What's at the core of this for you?")
-            
-            elif dominant_emotion == "fear":
-                suggestions.append("Fear often contains information about what we care about. What is your fear trying to protect?")
-                suggestions.append("What small, manageable step might help you move through this fear with greater confidence?")
-                if secondary_emotion == "hope":
-                    suggestions.append("I notice both fear and hope present. How might this tension be creating an opportunity for growth?")
-                    
-            # General growth-oriented reflection for challenging emotions
-            suggestions.append("Which of your personal strengths or past experiences might help you navigate this situation with more resilience?")
-            
-        elif category == "positive":
-            if compound_score > 0.5:  # Strongly positive
-                suggestions.append("There's wonderful positive energy flowing through your entry! How can you amplify and share this vibrant state?")
-            else:
-                suggestions.append("I notice uplifting energy in your words. How might you build on these positive feelings in a meaningful way?")
-            
-            # Specific emotion-based reflections
-            if dominant_emotion == "joy":
-                suggestions.append("This joy seems significant. What specific elements created this feeling, and how might you cultivate more of this experience?")
-                suggestions.append("How does this joyful state connect to your deeper values or sense of purpose?")
-                if secondary_emotion == "sadness":
-                    suggestions.append("Joy and sadness often appear together during meaningful transitions. What might be transitioning in your life right now?")
-            
-            elif dominant_emotion == "hope":
-                suggestions.append("Your hope reveals what matters to you. What vision or possibility are you connecting with that energizes you?")
-                suggestions.append("What inspired action would align with and strengthen this hopeful outlook?")
-                if secondary_emotion == "fear":
-                    suggestions.append("Hope alongside fear often appears at the edge of growth opportunities. What new possibility might be emerging for you?")
-                    
-            # Expression and sharing of positive states
-            suggestions.append("How might you express or share this positive energy in a way that amplifies its impact for yourself and others?")
-            
-        else:  # neutral
-            suggestions.append("Your entry has a balanced or neutral tone. What feelings or insights might be present just beneath the surface?")
-            suggestions.append("What patterns or themes do you notice when you reflect on your thoughts from a place of neutrality?")
-            suggestions.append("Sometimes neutrality creates space for deeper awareness. What might emerge if you sit with this topic a bit longer?")
+        # Opening reflection based on emotional intensity and complexity
+        if len(sorted_emotions) >= 2:
+            suggestions.append(f"I notice a complex emotional landscape with strong presence of {dominant_emotion} ({sorted_emotions[0][1]:.0f}%) and {secondary_emotion} ({sorted_emotions[1][1]:.0f}%). Let's explore these feelings together.")
+        elif dominant_emotion:
+            suggestions.append(f"I see a clear presence of {dominant_emotion} ({sorted_emotions[0][1]:.0f}%) in your entry. Let's understand this emotion better.")
         
-        # Module-specific reflections could be added here based on current module/lesson
+        # Specific emotion-based reflections
+        if dominant_emotion == "sadness":
+            suggestions.append("Your sadness seems to be highlighting something meaningful. What core needs or values might it be connected to?")
+            if secondary_emotion == "anger":
+                suggestions.append("The combination of sadness and anger often appears when we've experienced a violation of something we deeply value. What boundaries or values feel important to honor right now?")
+            elif secondary_emotion == "hope":
+                suggestions.append("I notice both sadness and hope present - this often emerges during times of meaningful transition or growth. What possibilities might be emerging through this experience?")
         
-        # Always add a forward-looking, action-oriented question
-        suggestions.append("Based on today's reflection, what one small intention or action would feel most aligned for you moving forward?")
+        elif dominant_emotion == "anger":
+            suggestions.append("Your anger appears to be carrying important energy. What is it protecting or standing up for?")
+            if secondary_emotion == "fear":
+                suggestions.append("When anger and fear appear together, it often signals a deep need for safety or control. What would help you feel more secure in this situation?")
+            elif secondary_emotion == "sadness":
+                suggestions.append("The presence of both anger and sadness suggests a complex emotional response to something meaningful. What values or needs feel most important to honor?")
+        
+        elif dominant_emotion == "fear":
+            suggestions.append("Your fear seems to be highlighting something you care about. What is it trying to protect?")
+            if secondary_emotion == "hope":
+                suggestions.append("The dance between fear and hope often appears at the edge of meaningful growth. What new possibility might be trying to emerge?")
+            elif secondary_emotion == "anger":
+                suggestions.append("When fear and anger combine, it often points to a need for boundaries or protection. What would help you feel more secure and empowered?")
+        
+        elif dominant_emotion == "joy":
+            suggestions.append("This joy feels significant. What specific elements or conditions helped create this positive state?")
+            if secondary_emotion == "hope":
+                suggestions.append("The combination of joy and hope suggests you're connecting with meaningful possibilities. What vision or potential are you sensing?")
+            elif secondary_emotion == "fear":
+                suggestions.append("Sometimes joy mixed with fear appears when we're stepping into something meaningful but unfamiliar. What growth opportunity might be presenting itself?")
+        
+        elif dominant_emotion == "hope":
+            suggestions.append("Your sense of hope is noteworthy. What possibilities or potential are you connecting with?")
+            if secondary_emotion == "fear":
+                suggestions.append("Hope and fear often dance together at the edge of growth. What new territory might you be stepping into?")
+            elif secondary_emotion == "sadness":
+                suggestions.append("The presence of both hope and sadness can signal a meaningful transition. What might be ending, and what might be beginning?")
+        
+        # Add reflections based on emotional intensity
+        total_intensity = sum(emotion[1] for emotion in sorted_emotions)
+        if total_intensity > 150:  # High emotional intensity
+            suggestions.append("I notice particularly strong emotional energy in your entry. How might you channel this intensity in a way that serves your growth?")
+        elif total_intensity < 50:  # Low emotional intensity
+            suggestions.append("Your entry carries a more measured emotional tone. What subtle feelings or insights might be present just beneath the surface?")
+        
+        # Add forward-looking reflection
+        suggestions.append("Based on these emotional insights, what one small step would feel most supportive or meaningful right now?")
         
         # Shuffle and return a diverse set of reflections
         import random
         random.shuffle(suggestions)
         
-        return suggestions
+        # Return 3-5 suggestions based on emotional complexity
+        num_suggestions = min(5, max(3, len(sorted_emotions) + 1))
+        return suggestions[:num_suggestions]

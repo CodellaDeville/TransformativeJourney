@@ -253,46 +253,116 @@ def show_weekly_summary():
             emotion_percentages = {k.capitalize(): v for k, v in emotion_averages.items()}
             sorted_emotions = sorted(emotion_percentages.items(), key=lambda x: x[1], reverse=True)
             
-            # Display top emotions
-            for emotion, value in sorted_emotions[:3]:
-                if value > 0:
-                    st.markdown(f"- **{emotion}:** {value:.1f}% intensity")
+            # Create a bar chart for emotion intensities
+            emotions = [e[0] for e in sorted_emotions]
+            intensities = [e[1] for e in sorted_emotions]
             
-            # Find dominant emotion
-            dominant_emotion = sorted_emotions[0][0].lower() if sorted_emotions else None
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=intensities,
+                y=emotions,
+                orientation='h',
+                marker_color=[
+                    '#FFC107' if e == 'Joy' else
+                    '#4CAF50' if e == 'Hope' else
+                    '#F44336' if e == 'Anger' else
+                    '#2196F3' if e == 'Sadness' else
+                    '#9C27B0' for e in emotions
+                ],
+                text=[f"{v:.1f}%" for v in intensities],
+                textposition='auto'
+            ))
             
-            # Display insight based on dominant emotion
-            if dominant_emotion:
-                st.markdown("### Key Emotional Insight")
-                
-                if dominant_emotion == "joy":
-                    st.markdown("Your entries show a strong presence of **joy**. This positive emotion can fuel creative energy and open you to new possibilities.")
-                    st.markdown("**Recommendation:** Consider what activities and circumstances create this positive emotion and how you might incorporate more of them into your daily life.")
-                elif dominant_emotion == "hope":
-                    st.markdown("**Hope** is prominent in your entries. This is a powerful emotion for transformation and can help you envision new possibilities.")
-                    st.markdown("**Recommendation:** Consider setting specific intentions that align with your hopeful outlook. What small steps might move you toward your vision?")
-                elif dominant_emotion == "sadness":
-                    st.markdown("Your entries reflect **sadness** during this period. This emotion often points to what matters deeply to us and what we may need to process.")
-                    st.markdown("**Recommendation:** Consider what losses or unmet needs might be beneath this feeling. What form of gentle self-compassion might support you?")
-                elif dominant_emotion == "anger":
-                    st.markdown("**Anger** appears as a significant emotion in your entries. Anger often signals boundary violations or unmet needs.")
-                    st.markdown("**Recommendation:** Reflect on what boundaries you might need to establish or reinforce. What constructive action might channel this energy?")
-                elif dominant_emotion == "fear":
-                    st.markdown("**Fear** emerges as a key emotion in your journal entries. Fear often highlights areas where we need more support or information.")
-                    st.markdown("**Recommendation:** Consider what resources might help you move through this fear. What small step would help you feel more secure?")
+            fig.update_layout(
+                title="Emotional Intensity Distribution",
+                xaxis_title="Intensity (%)",
+                yaxis_title="Emotion",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
+                height=250,
+                margin=dict(l=20, r=20, t=40, b=20),
+                xaxis=dict(
+                    range=[0, 100],
+                    ticksuffix="%"
+                )
+            )
             
-                # Overall pattern suggestions
-                st.markdown("### For Your Coaching Session")
-                st.markdown("Consider discussing:")
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Find dominant emotions (those with intensity > 30%)
+            significant_emotions = [(emotion, value) for emotion, value in sorted_emotions if value > 30]
+            
+            # Display insight based on emotional patterns
+            st.markdown("### Key Emotional Insights")
+            
+            if significant_emotions:
+                # Display insights for each significant emotion
+                for emotion, intensity in significant_emotions:
+                    emotion_lower = emotion.lower()
+                    
+                    insights = {
+                        'joy': {
+                            'description': "indicates a period of positive energy and openness to new experiences",
+                            'strength': "can fuel creativity and resilience",
+                            'suggestion': "identify what activities and circumstances create this positive emotion"
+                        },
+                        'hope': {
+                            'description': "shows an ability to envision positive possibilities even in challenges",
+                            'strength': "can drive motivation and perseverance",
+                            'suggestion': "set specific intentions that align with your hopeful outlook"
+                        },
+                        'sadness': {
+                            'description': "suggests a period of processing or reflection",
+                            'strength': "can deepen emotional awareness and empathy",
+                            'suggestion': "explore what needs or values might need attention"
+                        },
+                        'anger': {
+                            'description': "often signals boundary violations or unmet needs",
+                            'strength': "can provide energy for positive change",
+                            'suggestion': "identify what boundaries need to be established or reinforced"
+                        },
+                        'fear': {
+                            'description': "highlights areas where support or growth is needed",
+                            'strength': "can increase awareness and preparation",
+                            'suggestion': "consider what resources would help you feel more secure"
+                        }
+                    }
+                    
+                    if emotion_lower in insights:
+                        insight = insights[emotion_lower]
+                        st.markdown(f"""
+                        **{emotion} ({intensity:.1f}%)** {insight['description']}.
+                        - **Strength:** This emotion {insight['strength']}.
+                        - **Suggestion:** Consider how to {insight['suggestion']}.
+                        """)
                 
-                recommendations = [
-                    f"How your experience with {dominant_emotion} relates to your growth journey",
-                    "Any patterns you notice in your emotional trends that you'd like to explore further",
-                    "Specific goals or intentions for emotional development in the coming week"
-                ]
-                
-                for recommendation in recommendations:
-                    st.markdown(f"- {recommendation}")
+                # Add pattern analysis if multiple emotions are significant
+                if len(significant_emotions) > 1:
+                    st.markdown("### Pattern Analysis")
+                    emotions_list = [e[0].lower() for e in significant_emotions]
+                    
+                    if 'joy' in emotions_list and 'hope' in emotions_list:
+                        st.markdown("🌟 Your entries show a positive emotional pattern that can be particularly powerful for personal growth and setting new goals.")
+                    elif 'sadness' in emotions_list and 'fear' in emotions_list:
+                        st.markdown("🤗 Your entries reflect a period of vulnerability that may need extra self-compassion and support.")
+                    elif 'anger' in emotions_list and 'fear' in emotions_list:
+                        st.markdown("💪 Your entries suggest you might be facing challenges that require both courage and boundary-setting.")
+            else:
+                st.info("No dominant emotions detected. Your entries show a balanced emotional state or may need more detailed emotional expression.")
+            
+            # Recommendations for emotional development
+            st.markdown("### Recommendations for Your Journey")
+            st.markdown("Consider exploring:")
+            
+            recommendations = [
+                "How your emotional patterns relate to your current life circumstances",
+                "Which emotions feel most comfortable to express and which might need more attention",
+                "What specific actions could support your emotional well-being this week"
+            ]
+            
+            for recommendation in recommendations:
+                st.markdown(f"- {recommendation}")
     else:
         st.info("More journal entries are needed to generate meaningful growth insights.")
     

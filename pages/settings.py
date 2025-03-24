@@ -16,10 +16,11 @@ def show_settings():
         st.success("Name updated!")
     
     # Voice input toggle
-    voice_input = st.toggle("Enable Voice Input", st.session_state.voice_input_enabled)
-    if voice_input != st.session_state.voice_input_enabled:
-        st.session_state.voice_input_enabled = voice_input
-        st.success("Voice input settings updated!")
+    voice_col1, voice_col2 = st.columns([1, 2])
+    with voice_col1:
+        voice_input = st.toggle("Enable Voice Input", value=False, disabled=True)
+    with voice_col2:
+        st.info("🎙️ Voice input feature will be enabled in a future update")
     
     # Email notifications (for future implementation)
     email_notifications = st.toggle("Email Notifications", st.session_state.email_notifications)
@@ -49,24 +50,44 @@ def show_settings():
     
     # Import data
     st.markdown("### Import Data")
-    uploaded_file = st.file_uploader("Upload your journal data JSON file", type=["json"])
+    st.info("""
+    This feature allows you to restore your journal entries and settings from a previously exported file.
+    The file should be a JSON file that was exported from this app.
+    """)
+    
+    uploaded_file = st.file_uploader(
+        "Upload your journal data JSON file",
+        type=["json"],
+        help="Select a JSON file that was previously exported from Your Conscious Journal"
+    )
     
     if uploaded_file is not None:
         try:
-            # Load the JSON data
-            imported_data = uploaded_file.read().decode("utf-8")
+            # Read the file contents
+            file_contents = uploaded_file.getvalue().decode()
             
-            # Confirm import
-            if st.button("Confirm Import"):
-                success = import_user_data(imported_data)
+            # Validate JSON structure before importing
+            try:
+                json.loads(file_contents)
                 
-                if success:
-                    st.success("Data imported successfully!")
-                    st.rerun()
-                else:
-                    st.error("Failed to import data. Please check the file format.")
+                # Show preview of data
+                st.success("File validated successfully!")
+                
+                # Confirm import
+                if st.button("Import Data"):
+                    success = import_user_data(file_contents)
+                    
+                    if success:
+                        st.success("✅ Data imported successfully! The page will refresh in a moment...")
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to import data. Please ensure this is a valid export file.")
+            except json.JSONDecodeError:
+                st.error("❌ Invalid JSON file. Please upload a file that was exported from Your Conscious Journal.")
+                
         except Exception as e:
-            st.error(f"Error reading file: {str(e)}")
+            st.error(f"❌ Error reading file: {str(e)}")
+            st.info("💡 Try downloading a fresh export and importing that file instead.")
     
     # Reset data
     st.markdown("---")

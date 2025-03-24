@@ -3,13 +3,78 @@ from datetime import datetime
 import random
 from utils.sentiment_analysis import SentimentAnalyzer
 from utils.data_storage import save_journal_entry
-from utils.voice_input import voice_recorder
+
+def clear_input_field():
+    """Clear only the journal input field and its associated analysis"""
+    st.session_state.journal_content = ""
+    if 'last_analyzed_content' in st.session_state:
+        del st.session_state.last_analyzed_content
+    if 'last_sentiment_data' in st.session_state:
+        del st.session_state.last_sentiment_data
+    if 'last_themes' in st.session_state:
+        del st.session_state.last_themes
+    if 'last_reflections' in st.session_state:
+        del st.session_state.last_reflections
+    st.success("Journal input field cleared. You can start a new entry.")
+
+def clear_journal_entries():
+    """Clear all journal entries from session state"""
+    if 'journal_entries' in st.session_state:
+        st.session_state.journal_entries = []
+    if 'last_analyzed_content' in st.session_state:
+        del st.session_state.last_analyzed_content
+    if 'last_sentiment_data' in st.session_state:
+        del st.session_state.last_sentiment_data
+    if 'last_themes' in st.session_state:
+        del st.session_state.last_themes
+    if 'last_reflections' in st.session_state:
+        del st.session_state.last_reflections
+    st.success("All journal entries have been cleared.")
 
 def show_journal():
     st.header("Journal")
     
+    # Add JavaScript to handle Ctrl+Enter
+    st.markdown("""
+        <script>
+        // Wait for the text area to be available
+        const waitForTextArea = setInterval(() => {
+            const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
+            if (textArea) {
+                clearInterval(waitForTextArea);
+                
+                // Add event listener for keydown
+                textArea.addEventListener('keydown', (e) => {
+                    // Check for Ctrl+Enter
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault();  // Prevent default form submission
+                        
+                        // Update session state via Streamlit
+                        window.parent.postMessage(
+                            {
+                                type: "streamlit:setComponentValue",
+                                key: "journal_content_submitted",
+                                value: true
+                            },
+                            "*"
+                        );
+                    }
+                });
+            }
+        }, 100);
+        </script>
+    """, unsafe_allow_html=True)
+    
     # Initialize sentiment analyzer
     sentiment_analyzer = SentimentAnalyzer()
+    
+    # Add clear input button in the sidebar with clarifying tooltip
+    if st.sidebar.button("Clear Journal Input", help="Reset the journal input field to write a new entry. Your previously saved entries will remain intact."):
+        clear_input_field()
+    
+    # Add clear entries button in the sidebar
+    if st.sidebar.button("Clear All Journal Entries", help="Remove all saved journal entries"):
+        clear_journal_entries()
     
     # Select module and lesson
     col1, col2 = st.columns(2)
@@ -39,32 +104,38 @@ def show_journal():
     st.markdown("### Today's Reflection")
     st.markdown(f"**{prompt}**")
     
-    # Option for voice input
-    use_voice = st.checkbox("Use Voice Input", value=st.session_state.voice_input_enabled)
+    # Voice input notice
+    voice_col1, voice_col2 = st.columns([1, 4])
+    with voice_col1:
+        voice_enabled = st.checkbox("Use Voice Input", disabled=True)
+    with voice_col2:
+        if voice_enabled:
+            st.info("🎙️ Voice input feature will be enabled in a future update.")
     
-    # Journal entry content
-    content = ""
-    
-    if use_voice:
-        st.markdown("#### Voice Input")
-        st.info("Use the voice input below for your journal entry.")
-        
-        # Voice input component (simulated in this environment)
-        voice_text = voice_recorder()
-        
-        if voice_text:
-            content = voice_text
-    else:
-        # Text area for journal entry
-        content = st.text_area(
-            "Your Journal Entry",
-            height=200,
-            key="journal_content"
-        )
+    # Text area for journal entry with on_change handler
+    content = st.text_area(
+        "Your Journal Entry",
+        value=st.session_state.get('journal_content', ''),
+        height=200,
+        key="journal_content",
+        on_change=lambda: None  # Prevent default form submission
+    )
     
     # Only show analyze button if there's content
     if content.strip():
-        analyze_button = st.button("Analyze", key="analyze_button")
+        # Handle Ctrl+Enter submission
+        if st.session_state.get('journal_content_submitted', False):
+            st.session_state.journal_content_submitted = False
+            analyze_button = True
+        else:
+            analyze_button = st.button("Analyze", key="analyze_button")
+        
+        # Clear previous analysis when content changes
+        if 'last_analyzed_content' in st.session_state and st.session_state.last_analyzed_content != content:
+            del st.session_state.last_analyzed_content
+            del st.session_state.last_sentiment_data
+            del st.session_state.last_themes
+            del st.session_state.last_reflections
         
         if analyze_button or "last_analyzed_content" in st.session_state:
             # If this is a new analysis or content has changed
@@ -99,81 +170,92 @@ def show_journal():
                 # Display sentiment category with color
                 sentiment_category = sentiment_data.get('category', 'neutral')
                 if sentiment_category == 'positive':
-                    st.success(f"Overall Sentiment: Positive")
+                    st.success(f"Overall Sentiment: {sentiment_category.title()}")
                 elif sentiment_category == 'negative':
-                    st.error(f"Overall Sentiment: Challenging")
+                    st.error(f"Overall Sentiment: {sentiment_category.title()}")
                 else:
-                    st.info(f"Overall Sentiment: Balanced")
+                    st.info(f"Overall Sentiment: {sentiment_category.title()}")
                 
-                # Display detected emotions
+                # Display emotional content
+                st.markdown("#### Emotional Content")
                 emotions = sentiment_data.get('emotions', {})
-                if emotions:
-                    st.markdown("#### Emotional Content")
-                    
-                    # Sort emotions by value
-                    sorted_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)
-                    
-                    for emotion, value in sorted_emotions:
-                        if value > 0:
-                            st.markdown(f"- {emotion.capitalize()}: {value:.1f}%")
+                for emotion, intensity in emotions.items():
+                    # Show emotions with their intensities
+                    progress_color = (
+                        "#4CAF50" if intensity > 66 else  # Green for high intensity
+                        "#FFC107" if intensity > 33 else  # Yellow for medium intensity
+                        "#90A4AE"  # Grey for low intensity
+                    )
+                    st.markdown(
+                        f"""
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <div style="flex: 1;">{emotion.capitalize()}</div>
+                            <div style="flex: 2; margin-left: 10px;">
+                                <div style="background-color: #1E1E1E; border-radius: 10px; height: 10px; width: 100%;">
+                                    <div style="background-color: {progress_color}; width: {intensity}%; height: 100%; border-radius: 10px;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-left: 10px; min-width: 45px;">{intensity:.0f}%</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
                 
-                # Display themes
-                if themes:
-                    st.markdown("#### Key Themes")
-                    for theme in themes:
-                        st.markdown(f"- {theme.capitalize()}")
+                # Display key themes
+                st.markdown("#### Key Themes")
+                for theme in themes:
+                    st.write(f"• {theme}")
             
             with col2:
-                # Display reflections
+                # Display reflection suggestions with better formatting
                 st.markdown("#### Reflections to Consider")
-                for i, reflection in enumerate(reflections[:3]):
-                    st.markdown(f"{i+1}. {reflection}")
+                for i, reflection in enumerate(reflections, 1):
+                    st.markdown(f"""
+                    <div style="
+                        background-color: rgba(151, 166, 195, 0.1);
+                        padding: 10px;
+                        border-radius: 5px;
+                        margin-bottom: 10px;
+                    ">
+                        <strong>{i}.</strong> {reflection}
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Save button
+        if st.button("Save Journal Entry"):
+            # Save the entry
+            save_journal_entry(
+                module=module,
+                lesson=lesson,
+                prompt=prompt,
+                content=content,
+                sentiment_data=sentiment_data,
+                themes=themes
+            )
             
-            # Save journal entry option
-            st.markdown("---")
-            if st.button("Save Journal Entry"):
-                # Save the entry
-                entry = save_journal_entry(
-                    module=module,
-                    lesson=lesson,
-                    prompt=prompt,
-                    content=content,
-                    sentiment_data=sentiment_data,
-                    themes=themes
-                )
-                
-                # Update current module and lesson
-                # Move to next lesson if available, otherwise next module
-                if lesson < 4:
-                    st.session_state.current_lesson = lesson + 1
-                elif module < 5:
-                    st.session_state.current_module = module + 1
-                    st.session_state.current_lesson = 1
-                
-                st.success("Journal entry saved successfully!")
-                
-                # Clear the analyzed content state to refresh on next entry
-                if "last_analyzed_content" in st.session_state:
-                    del st.session_state.last_analyzed_content
-                
-                # Provide a button to continue
-                if st.button("Continue to Next Lesson"):
-                    st.rerun()
-    else:
-        st.info("Enter your journal entry and click 'Analyze' to receive insights.")
+            # Update current module and lesson
+            if lesson < 4:
+                st.session_state.current_lesson = lesson + 1
+            elif module < 5:
+                st.session_state.current_module = module + 1
+                st.session_state.current_lesson = 1
+            
+            st.success("Journal entry saved successfully!")
+            
+            # Add continue button that forces a page reload
+            if st.button("Continue to Next Lesson"):
+                st.rerun()
 
 def get_module_title(module_number):
     """Return the title for a module."""
-    module_titles = [
-        "",  # Module 0 doesn't exist
-        "Understanding Cycles and Patterns",
-        "Examining Beliefs and Conditioning",
-        "Developing Emotional Intelligence",
-        "Cultivating Intuition and Synchronicity",
-        "Intentional Creation"
-    ]
-    
-    return module_titles[module_number] if 0 < module_number <= len(module_titles) - 1 else "Unknown Module"
+    titles = {
+        1: "Understanding Cycles and Patterns",
+        2: "Examining Beliefs and Conditioning",
+        3: "Developing Emotional Intelligence",
+        4: "Cultivating Intuition and Synchronicity",
+        5: "Intentional Creation"
+    }
+    return titles.get(module_number, f"Module {module_number}")
 
 def get_lesson_title(module_number, lesson_number):
     """Return the title for a lesson."""

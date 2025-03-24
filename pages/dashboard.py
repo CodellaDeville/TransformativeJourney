@@ -21,7 +21,10 @@ def show_dashboard():
             mode="gauge+number",
             value=progress_percentage,
             domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': "Journey Completion"},
+            title={
+                'text': "Journey Completion",
+                'font': {'size': 16, 'color': 'white'}
+            },
             gauge={
                 'axis': {'range': [0, 100]},
                 'bar': {'color': "#9c27b0"},
@@ -34,10 +37,13 @@ def show_dashboard():
         ))
         
         progress_fig.update_layout(
-            height=200,
-            margin=dict(l=20, r=20, t=30, b=20),
+            height=300,  # Increased height for better spacing
+            margin=dict(l=20, r=20, t=80, b=20),  # Increased top margin
             paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white")
+            font=dict(
+                color="white",
+                size=14
+            )
         )
         
         st.plotly_chart(progress_fig, use_container_width=True)
