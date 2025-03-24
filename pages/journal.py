@@ -229,32 +229,37 @@ def show_journal():
             elif not hasattr(st.session_state, "last_analyzed_content") or st.session_state.last_analyzed_content != content:
                 st.error("Please analyze your entry before saving.")
             else:
-                # Get the analyzed data from session state
-                sentiment_data = st.session_state.last_sentiment_data
-                themes = st.session_state.last_themes
-                
-                # Save the entry
-                save_journal_entry(
-                    module=module,
-                    lesson=lesson,
-                    prompt=prompt,
-                    content=content,
-                    sentiment_data=sentiment_data,
-                    themes=themes
-                )
-                
-                st.success("Journal entry saved successfully!")
-                
-                # Add continue button that forces a page reload when clicked
-                if st.button("Continue to Next Lesson"):
-                    # Only update the module and lesson when the continue button is clicked
-                    if lesson < 4:
-                        st.session_state.current_lesson = lesson + 1
-                    elif module < 5:
-                        st.session_state.current_module = module + 1
-                        st.session_state.current_lesson = 1
+                try:
+                    # Get the analyzed data from session state with default fallbacks
+                    sentiment_data = getattr(st.session_state, "last_sentiment_data", 
+                                           {'category': 'neutral', 'emotions': {'neutral': 50}})
+                    themes = getattr(st.session_state, "last_themes", [])
                     
-                    st.rerun()
+                    # Save the entry
+                    save_journal_entry(
+                        module=module,
+                        lesson=lesson,
+                        prompt=prompt,
+                        content=content,
+                        sentiment_data=sentiment_data,
+                        themes=themes
+                    )
+                    
+                    st.success("Journal entry saved successfully!")
+                    
+                    # Add continue button that forces a page reload when clicked
+                    if st.button("Continue to Next Lesson"):
+                        # Only update the module and lesson when the continue button is clicked
+                        if lesson < 4:
+                            st.session_state.current_lesson = lesson + 1
+                        elif module < 5:
+                            st.session_state.current_module = module + 1
+                            st.session_state.current_lesson = 1
+                        
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Error saving journal entry: {str(e)}")
+                    st.info("Please try analyzing your entry again before saving.")
 
 def get_module_title(module_number):
     """Return the title for a module."""
