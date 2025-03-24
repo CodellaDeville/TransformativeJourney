@@ -122,27 +122,58 @@ def show_weekly_summary():
     
     # Date selection
     st.subheader("Select Period for Summary")
-    
+
     # Date range selector
     col1, col2 = st.columns(2)
     
+    # Initialize default dates
+    default_start = datetime.now() - timedelta(days=7)
+    default_end = datetime.now()
+    
+    # Get min/max dates from journal entries to prevent errors
+    min_date = default_start
+    max_date = default_end
+    
+    try:
+        # Try to get actual min/max dates from journal entries if they exist
+        if st.session_state.journal_entries:
+            all_dates = [datetime.strptime(entry['date'], '%Y-%m-%d').date() 
+                        for entry in st.session_state.journal_entries]
+            if all_dates:
+                min_date = min(all_dates)
+                max_date = max(all_dates)
+                
+                # Adjust max_date to today if it's in the future
+                if max_date > datetime.now().date():
+                    max_date = datetime.now().date()
+    except (ValueError, KeyError, AttributeError):
+        # Fallback to defaults if there's any error
+        pass
+    
     with col1:
-        # Default start date is 7 days ago
-        default_start = datetime.now() - timedelta(days=7)
-        start_date = st.date_input(
-            "Start Date",
-            value=default_start,
-            max_value=datetime.now()
-        )
+        try:
+            # Default start date is 7 days ago or earliest entry
+            start_date = st.date_input(
+                "Start Date",
+                value=default_start,
+                max_value=default_end
+            )
+        except Exception:
+            # Fallback if date input fails
+            start_date = default_start.date()
     
     with col2:
-        # Default end date is today
-        end_date = st.date_input(
-            "End Date",
-            value=datetime.now(),
-            min_value=start_date,
-            max_value=datetime.now()
-        )
+        try:
+            # Default end date is today or latest entry
+            end_date = st.date_input(
+                "End Date",
+                value=default_end,
+                min_value=start_date,
+                max_value=default_end
+            )
+        except Exception:
+            # Fallback if date input fails
+            end_date = default_end.date()
     
     # Filter entries for the selected period
     entries = get_entries_for_period(start_date, end_date)
@@ -539,9 +570,20 @@ def get_entries_for_period(start_date, end_date):
     """
     entries = []
     
-    for entry in st.session_state.journal_entries:
-        entry_date = datetime.strptime(entry['date'], '%Y-%m-%d').date()
-        if start_date <= entry_date <= end_date:
-            entries.append(entry)
+    try:
+        if not hasattr(st.session_state, 'journal_entries') or not st.session_state.journal_entries:
+            return entries
+            
+        for entry in st.session_state.journal_entries:
+            try:
+                entry_date = datetime.strptime(entry['date'], '%Y-%m-%d').date()
+                if start_date <= entry_date <= end_date:
+                    entries.append(entry)
+            except (ValueError, KeyError, TypeError):
+                # Skip entries with invalid dates
+                continue
+    except Exception as e:
+        st.error(f"Error loading journal entries: {str(e)}")
+        return []
     
     return entries
