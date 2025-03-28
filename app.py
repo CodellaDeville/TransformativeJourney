@@ -40,11 +40,23 @@ def load_css():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
     
-    .main {
-        background-color: #913923;
+    /* Force background color with high specificity and !important */
+    .main, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+        background-color: #913923 !important;
     }
+    
+    /* Target specific Streamlit Cloud elements */
+    .st-emotion-cache-1aehpvj, .st-emotion-cache-1y4p8pa, .st-emotion-cache-1egp7eo {
+        background-color: #913923 !important;
+    }
+    
+    /* Ensure all containers use the background color */
+    .block-container, [data-testid="stVerticalBlock"] {
+        background-color: #913923 !important;
+    }
+    
     .stApp header {
-        background-color: rgba(0,0,0,0);
+        background-color: rgba(0,0,0,0) !important;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
@@ -111,8 +123,8 @@ def load_css():
         transform: translateY(-2px);
     }
     /* Sidebar styling */
-    .css-1d391kg, .css-1lcbmhc {
-        background-color: rgba(145, 57, 35, 0.8);
+    .css-1d391kg, .css-1lcbmhc, [data-testid="stSidebar"] {
+        background-color: rgba(145, 57, 35, 0.8) !important;
     }
     .stSidebar button {
         background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
