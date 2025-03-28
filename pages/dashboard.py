@@ -114,7 +114,7 @@ def show_dashboard():
         fig.add_trace(go.Bar(
             x=categories,
             y=values,
-            marker_color=['#9c27b0', '#ff7043', '#3f51b5'],
+            marker_color=['#ffcf54', '#ff7f00', '#c54e2c'],  # Gold, orange, rust to match our color scheme
             text=values,
             textposition='auto',
         ))
