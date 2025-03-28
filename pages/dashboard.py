@@ -28,11 +28,11 @@ def show_dashboard():
             number={'font': {'color': '#ffffff'}},
             gauge={
                 'axis': {'range': [0, 100], 'tickcolor': "rgba(255, 207, 84, 0.5)"},
-                'bar': {'color': "rgba(0,0,0,0)"},  # Make default bar transparent
+                'bar': {'color': "#ffcf54"},  # Use our gold color for the bar
                 'bgcolor': "rgba(0,0,0,0)",
                 'borderwidth': 0,
                 'steps': [
-                    # Create a multi-step gradient for the bar
+                    # Create a multi-step gradient for the bar background
                     {'range': [0, 5], 'color': "#665500"},                 # Darkest yellow
                     {'range': [5, 15], 'color': "#887300"},                # Dark yellow
                     {'range': [15, 30], 'color': "#aa8c00"},               # Medium dark yellow
@@ -42,25 +42,12 @@ def show_dashboard():
                     {'range': [75, 90], 'color': "#f9eaa1"},               # Very light yellow
                     {'range': [90, 100], 'color': "#ffffff"}               # White
                 ],
-                # Add a custom shape to create a smooth gradient overlay
                 'shape': 'bullet'
             }
         ))
         
-        # Add a custom shape to simulate a gradient
-        progress_fig.add_trace(go.Scatter(
-            x=[0, progress_percentage/100],
-            y=[0, 0],
-            mode='lines',
-            line=dict(
-                color='rgba(0,0,0,0)',
-                width=20,
-            ),
-            fill='tozeroy',
-            fillcolor=f'linear-gradient(90deg, #665500, #ffffff)',
-            hoverinfo='none',
-            showlegend=False
-        ))
+        # Remove the custom gradient overlay that was causing the error
+        # and let the built-in steps create the gradient effect
         
         progress_fig.update_layout(
             height=300,  # Increased height for better spacing
