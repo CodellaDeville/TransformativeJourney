@@ -15,6 +15,10 @@ def clear_input_field():
         del st.session_state.last_themes
     if 'last_reflections' in st.session_state:
         del st.session_state.last_reflections
+        
+    # Make sure the current page stays as "journal" to prevent reverting to dashboard
+    st.session_state.current_page = "journal"
+    
     st.success("Journal input field cleared. You can start a new entry.")
 
 def clear_journal_entries():
@@ -29,6 +33,10 @@ def clear_journal_entries():
         del st.session_state.last_themes
     if 'last_reflections' in st.session_state:
         del st.session_state.last_reflections
+        
+    # Make sure the current page stays as "journal" to prevent reverting to dashboard
+    st.session_state.current_page = "journal"
+    
     st.success("All journal entries have been cleared.")
 
 def show_journal():
@@ -49,7 +57,17 @@ def show_journal():
                     if (e.ctrlKey && e.key === 'Enter') {
                         e.preventDefault();  // Prevent default form submission
                         
-                        // Update session state via Streamlit
+                        // First ensure we stay on journal page
+                        window.parent.postMessage(
+                            {
+                                type: "streamlit:setComponentValue",
+                                key: "current_page",
+                                value: "journal"
+                            },
+                            "*"
+                        );
+                        
+                        // Then trigger the analysis
                         window.parent.postMessage(
                             {
                                 type: "streamlit:setComponentValue",
@@ -126,6 +144,8 @@ def show_journal():
         # Handle Ctrl+Enter submission
         if st.session_state.get('journal_content_submitted', False):
             st.session_state.journal_content_submitted = False
+            # Ensure we stay on the journal page
+            st.session_state.current_page = "journal"
             analyze_button = True
         else:
             analyze_button = st.button("Analyze", key="analyze_button")
