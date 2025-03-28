@@ -52,14 +52,23 @@ def load_css():
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
-        background-color: rgba(255, 206, 84, 0.1);
+        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
+        color: white;
         border-radius: 4px 4px 0px 0px;
         gap: 1px;
         padding-left: 10px;
         padding-right: 10px;
+        transition: all 0.3s ease;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(255, 206, 84, 0.3);
+        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
+        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+        transform: translateY(-2px);
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
+        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+        transform: translateY(-2px);
     }
     .gradient-text {
         font-family: 'Satisfy', cursive;
