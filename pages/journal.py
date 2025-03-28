@@ -276,14 +276,34 @@ def show_journal():
                     st.success("Journal entry saved successfully!")
                     
                     # Add continue button that forces a page reload when clicked
-                    if st.button("Continue to Next Lesson"):
-                        # Only update the module and lesson when the continue button is clicked
+                    if st.button("Continue to Next Lesson", key="next_lesson_button"):
+                        # Store in session state that we want to advance
+                        st.session_state.advance_lesson = True
+                        st.session_state.current_page = "journal"
+                        st.rerun()
+                    
+                    # Check if we need to advance the lesson (happens after rerun)
+                    if st.session_state.get('advance_lesson', False):
+                        # Only update the module and lesson when the continue button was clicked
                         if lesson < 4:
                             st.session_state.current_lesson = lesson + 1
                         elif module < 5:
                             st.session_state.current_module = module + 1
                             st.session_state.current_lesson = 1
                         
+                        # Reset the advance flag
+                        st.session_state.advance_lesson = False
+                        # Make sure to clear input for the next lesson
+                        st.session_state.journal_content = ""
+                        # Stay on journal page
+                        st.session_state.current_page = "journal"
+                        
+                        # Show a message for the new lesson
+                        new_module = st.session_state.current_module
+                        new_lesson = st.session_state.current_lesson
+                        st.info(f"Advanced to Module {new_module}: {get_module_title(new_module)}, Lesson {new_lesson}: {get_lesson_title(new_module, new_lesson)}")
+                        
+                        # Force another refresh to show the new lesson content
                         st.rerun()
                 except Exception as e:
                     st.error(f"Error saving journal entry: {str(e)}")
