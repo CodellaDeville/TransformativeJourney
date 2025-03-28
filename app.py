@@ -34,60 +34,15 @@ def get_img_with_href(img_path, **css):
     css_str = ' '.join([f'{k}: {v};' for k, v in css.items()])
     return f'<img src="data:image/png;base64,{b64}" style="{css_str}">'
 
-# App styling
+# App styling - load CSS from file
 def load_css():
+    # First load the CSS file
+    with open(os.path.join(os.path.dirname(__file__), 'style.css'), 'r') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    
+    # Also add some inline CSS for any dynamic elements
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
-    
-    /* Force background color with high specificity and !important */
-    .main, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
-        background-color: #913923 !important;
-    }
-    
-    /* Target specific Streamlit Cloud elements */
-    .st-emotion-cache-1aehpvj, .st-emotion-cache-1y4p8pa, .st-emotion-cache-1egp7eo {
-        background-color: #913923 !important;
-    }
-    
-    /* Ensure all containers use the background color */
-    .block-container, [data-testid="stVerticalBlock"] {
-        background-color: #913923 !important;
-    }
-    
-    .stApp header {
-        background-color: rgba(0,0,0,0) !important;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
-        color: white;
-        border-radius: 4px 4px 0px 0px;
-        gap: 1px;
-        padding-left: 10px;
-        padding-right: 10px;
-        transition: all 0.3s ease;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
-        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
-        transform: translateY(-2px);
-    }
-    .stTabs [data-baseweb="tab"]:hover {
-        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
-        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
-        transform: translateY(-2px);
-    }
-    .gradient-text {
-        font-family: 'Satisfy', cursive;
-        background: linear-gradient(90deg, #ffcf54, #ffd700);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
     .app-header {
         display: flex;
         align-items: center;
@@ -99,52 +54,6 @@ def load_css():
         height: 50px;
         border-radius: 10px;
         box-shadow: 0 0 20px rgba(255, 206, 84, 0.3);
-    }
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-    }
-    h4 {
-        color: #ffcf54;
-    }
-    /* Button styling */
-    .stButton button {
-        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
-        color: white;
-        font-weight: bold;
-        border: none;
-        border-radius: 30px;
-        padding: 10px 20px;
-        transition: all 0.3s ease;
-    }
-    .stButton button:hover {
-        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
-        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
-        transform: translateY(-2px);
-    }
-    /* Sidebar styling */
-    .css-1d391kg, .css-1lcbmhc, [data-testid="stSidebar"] {
-        background-color: rgba(145, 57, 35, 0.8) !important;
-    }
-    .stSidebar button {
-        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
-        color: white;
-        border: none;
-        border-radius: 30px;
-        text-align: left;
-        width: 100%;
-        margin: 5px 0;
-        transition: all 0.3s;
-    }
-    .stSidebar button:hover {
-        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
-        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
-        transform: translateY(-2px);
-    }
-    /* Input fields */
-    .stTextInput input, .stTextArea textarea, .stSelectbox, .stDateInput {
-        border-radius: 8px;
-        border: 1px solid rgba(255, 206, 84, 0.3);
     }
     </style>
     """, unsafe_allow_html=True)

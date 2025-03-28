@@ -1,0 +1,137 @@
+/* Custom styling for TransformativeJourney app */
+@import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
+
+/* Force background color */
+.main, 
+[data-testid="stAppViewContainer"], 
+[data-testid="stApp"],
+.st-emotion-cache-19rxjzo,
+.st-emotion-cache-ffhzg2,
+.st-emotion-cache-1aehpvj, 
+.st-emotion-cache-1y4p8pa, 
+.st-emotion-cache-1egp7eo,
+html,
+body {
+    background-color: #913923 !important;
+    color: white !important;
+}
+
+/* Ensure all containers use the background color */
+div[class*="css"],
+div[class*="stApp"],
+section[data-testid="stSidebar"], 
+.block-container, 
+[data-testid="stVerticalBlock"] {
+    background-color: #913923 !important;
+}
+
+.st-emotion-cache-z5fcl4,
+.st-emotion-cache-16txtl3,
+.st-emotion-cache-18ni7ap,
+.st-emotion-cache-1fkbq6y {
+    background-color: #913923 !important;
+}
+
+/* Custom header */
+.stApp header {
+    background-color: rgba(0,0,0,0) !important;
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px;
+}
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c) !important;
+    color: white !important;
+    border-radius: 4px 4px 0px 0px;
+    gap: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    transition: all 0.3s ease;
+}
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(to right, #ffec00, #ff9500, #e85d35) !important;
+    box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+    transform: translateY(-2px);
+}
+.stTabs [data-baseweb="tab"]:hover {
+    background: linear-gradient(to right, #ffec00, #ff9500, #e85d35) !important;
+    box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Text styling */
+.gradient-text {
+    font-family: 'Satisfy', cursive;
+    background: linear-gradient(90deg, #ffcf54, #ffd700);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #ffcf54 !important;
+}
+p, div, span, label {
+    color: white !important;
+}
+
+/* Button styling */
+.stButton button {
+    background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c) !important;
+    color: white !important;
+    font-weight: bold;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+.stButton button:hover {
+    background: linear-gradient(to right, #ffec00, #ff9500, #e85d35) !important;
+    box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] > div {
+    background-color: rgba(145, 57, 35, 0.8) !important;
+}
+section[data-testid="stSidebar"] button {
+    background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 30px !important;
+    text-align: left;
+    width: 100%;
+    margin: 5px 0;
+    transition: all 0.3s;
+}
+section[data-testid="stSidebar"] button:hover {
+    background: linear-gradient(to right, #ffec00, #ff9500, #e85d35) !important;
+    box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Progress bar styling */
+.stProgress > div > div {
+    background-image: linear-gradient(to right, #665500, #887300, #aa8c00, #ccaa00, #edc427, #f5dc6b, #f9eaa1, #ffffff) !important;
+}
+
+/* Input fields */
+.stTextInput input, .stTextArea textarea, .stSelectbox, .stDateInput {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 206, 84, 0.3) !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: white !important;
+}
+
+/* Override any dark mode specific styling */
+@media (prefers-color-scheme: dark) {
+    html, body, [data-testid="stAppViewContainer"], .main {
+        background-color: #913923 !important;
+    }
+}
