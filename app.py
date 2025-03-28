@@ -41,7 +41,7 @@ def load_css():
     @import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
     
     .main {
-        background: linear-gradient(to bottom right, #913923, #c54e2c);
+        background-color: #913923;
     }
     .stApp header {
         background-color: rgba(0,0,0,0);
