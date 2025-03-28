@@ -1,3 +1,33 @@
+/* Apply background color directly to the body */
+body {
+    background-color: #913923 !important;
+}
+
+/* More forceful selectors for Streamlit */
+body[data-new-gr-c-s-check-loaded], 
+body[data-gr-c-s-loaded="true"],
+.stApp,
+.main,
+[data-testid="stAppViewContainer"],
+.st-emotion-cache-ffhzg2,
+.st-emotion-cache-7ym5gk,
+.st-emotion-cache-uf99v8,
+.st-emotion-cache-16txtl3,
+.st-emotion-cache-1d3w5wq,
+:root {
+    background-color: #913923 !important;
+}
+
+/* Additional selector for Streamlit desktop */
+.stApp > header {
+    background-color: transparent !important;
+}
+
+/* Override any base styles from Streamlit */
+div[data-baseweb="base-layer"] {
+    background-color: #913923 !important;
+}
+
 /* Custom styling for TransformativeJourney app */
 @import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
 

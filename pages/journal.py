@@ -277,34 +277,33 @@ def show_journal():
                     
                     # Add continue button that forces a page reload when clicked
                     if st.button("Continue to Next Lesson", key="next_lesson_button"):
-                        # Store in session state that we want to advance
-                        st.session_state.advance_lesson = True
-                        st.session_state.current_page = "journal"
-                        st.rerun()
-                    
-                    # Check if we need to advance the lesson (happens after rerun)
-                    if st.session_state.get('advance_lesson', False):
-                        # Only update the module and lesson when the continue button was clicked
+                        # Directly update the module and lesson when continue button is clicked
                         if lesson < 4:
                             st.session_state.current_lesson = lesson + 1
                         elif module < 5:
                             st.session_state.current_module = module + 1
                             st.session_state.current_lesson = 1
-                        
-                        # Reset the advance flag
-                        st.session_state.advance_lesson = False
-                        # Make sure to clear input for the next lesson
+                            
+                        # Clear input for the next lesson
                         st.session_state.journal_content = ""
                         # Stay on journal page
                         st.session_state.current_page = "journal"
                         
-                        # Show a message for the new lesson
-                        new_module = st.session_state.current_module
-                        new_lesson = st.session_state.current_lesson
-                        st.info(f"Advanced to Module {new_module}: {get_module_title(new_module)}, Lesson {new_lesson}: {get_lesson_title(new_module, new_lesson)}")
+                        # Show a message for the new lesson (this will appear on the next run)
+                        st.session_state.show_lesson_advanced = True
+                        st.session_state.new_module = st.session_state.current_module
+                        st.session_state.new_lesson = st.session_state.current_lesson
                         
-                        # Force another refresh to show the new lesson content
+                        # Force a refresh
                         st.rerun()
+                    
+                    # Check if we should show the "advanced to next lesson" message
+                    if st.session_state.get('show_lesson_advanced', False):
+                        new_module = st.session_state.get('new_module')
+                        new_lesson = st.session_state.get('new_lesson')
+                        st.success(f"Advanced to Module {new_module}: {get_module_title(new_module)}, Lesson {new_lesson}: {get_lesson_title(new_module, new_lesson)}")
+                        # Reset the flag so we don't show this message again
+                        st.session_state.show_lesson_advanced = False
                 except Exception as e:
                     st.error(f"Error saving journal entry: {str(e)}")
                     st.info("Please try analyzing your entry again before saving.")
