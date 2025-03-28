@@ -88,25 +88,27 @@ def load_css():
     }
     /* Button styling */
     .stButton button {
-        background-color: #ffcf54;
-        color: #913923;
+        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
+        color: white;
         font-weight: bold;
         border: none;
         border-radius: 30px;
         padding: 10px 20px;
+        transition: all 0.3s ease;
     }
     .stButton button:hover {
-        background-color: #ffd700;
-        box-shadow: 0 0 10px rgba(255, 206, 84, 0.5);
+        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
+        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+        transform: translateY(-2px);
     }
     /* Sidebar styling */
     .css-1d391kg, .css-1lcbmhc {
         background-color: rgba(145, 57, 35, 0.8);
     }
     .stSidebar button {
-        background-color: rgba(255, 206, 84, 0.2);
-        color: #ffcf54;
-        border: 1px solid #ffcf54;
+        background: linear-gradient(to right, #ffd700, #ff7f00, #c54e2c);
+        color: white;
+        border: none;
         border-radius: 30px;
         text-align: left;
         width: 100%;
@@ -114,8 +116,9 @@ def load_css():
         transition: all 0.3s;
     }
     .stSidebar button:hover {
-        background-color: rgba(255, 206, 84, 0.4);
-        color: white;
+        background: linear-gradient(to right, #ffec00, #ff9500, #e85d35);
+        box-shadow: 0 0 15px rgba(255, 206, 84, 0.7);
+        transform: translateY(-2px);
     }
     /* Input fields */
     .stTextInput input, .stTextArea textarea, .stSelectbox, .stDateInput {
