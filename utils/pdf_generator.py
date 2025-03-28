@@ -19,13 +19,19 @@ class PDFGenerator:
         
     def _create_custom_styles(self):
         """Create custom paragraph styles for the PDF."""
+        # Define custom colors to match our website theme
+        golden = colors.Color(1, 0.81, 0.33)     # #ffcf54
+        deep_orange = colors.Color(0.57, 0.23, 0.14)  # #913923
+        mid_orange = colors.Color(0.77, 0.31, 0.17)   # #c54e2c
+        bright_gold = colors.Color(1, 0.85, 0)   # #ffd700
+        
         custom_styles = {
             'Title': ParagraphStyle(
                 'Title',
                 parent=self.styles['Title'],
                 fontName='Helvetica-Bold',
                 fontSize=18,
-                textColor=colors.purple,
+                textColor=golden,
                 spaceAfter=12
             ),
             'Heading1': ParagraphStyle(
@@ -33,7 +39,7 @@ class PDFGenerator:
                 parent=self.styles['Heading1'],
                 fontName='Helvetica-Bold',
                 fontSize=14,
-                textColor=colors.darkblue,
+                textColor=deep_orange,
                 spaceAfter=8
             ),
             'Heading2': ParagraphStyle(
@@ -41,7 +47,7 @@ class PDFGenerator:
                 parent=self.styles['Heading2'],
                 fontName='Helvetica-Bold',
                 fontSize=12,
-                textColor=colors.darkblue,
+                textColor=mid_orange,
                 spaceBefore=6,
                 spaceAfter=6
             ),
@@ -61,7 +67,7 @@ class PDFGenerator:
                 rightIndent=20,
                 spaceAfter=12,
                 borderWidth=1,
-                borderColor=colors.lightgrey,
+                borderColor=golden,
                 borderPadding=8,
                 borderRadius=5
             ),
@@ -80,7 +86,7 @@ class PDFGenerator:
                 parent=self.styles['Normal'],
                 fontName='Helvetica',
                 fontSize=10,
-                textColor=colors.darkblue,
+                textColor=deep_orange,
                 leftIndent=10,
                 spaceAfter=6
             )
@@ -146,14 +152,14 @@ class PDFGenerator:
         
         activity_table = Table(activity_data, colWidths=[200, 200])
         activity_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (1, 0), colors.lavender),
-            ('TEXTCOLOR', (0, 0), (1, 0), colors.darkblue),
+            ('BACKGROUND', (0, 0), (1, 0), colors.Color(0.77, 0.31, 0.17)),  # mid_orange
+            ('TEXTCOLOR', (0, 0), (1, 0), colors.Color(1, 0.85, 0)),  # bright_gold
             ('ALIGN', (0, 0), (1, 0), 'CENTER'),
             ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (1, 0), 12),
             ('BACKGROUND', (0, 1), (1, -1), colors.white),
-            ('GRID', (0, 0), (1, -1), 1, colors.lightgrey)
+            ('GRID', (0, 0), (1, -1), 1, colors.Color(1, 0.81, 0.33, 0.3))  # golden with transparency
         ]))
         
         elements.append(activity_table)

@@ -229,12 +229,20 @@ def show_journal():
             elif not hasattr(st.session_state, "last_analyzed_content") or st.session_state.last_analyzed_content != content:
                 st.error("Please analyze your entry before saving.")
             else:
+                # Initialize default values outside the try block to prevent UnboundLocalError
+                sentiment_data = {'category': 'neutral', 'emotions': {'neutral': 50}}
+                themes = []
+                
                 try:
                     # Get the analyzed data from session state with default fallbacks
-                    sentiment_data = getattr(st.session_state, "last_sentiment_data", 
-                                           {'category': 'neutral', 'emotions': {'neutral': 50}})
-                    themes = getattr(st.session_state, "last_themes", [])
-                    
+                    if hasattr(st.session_state, "last_sentiment_data"):
+                        sentiment_data = st.session_state.last_sentiment_data
+                    if hasattr(st.session_state, "last_themes"):
+                        themes = st.session_state.last_themes
+                except Exception as e:
+                    st.warning(f"Could not retrieve analysis data: {str(e)}. Using default values.")
+                
+                try:
                     # Save the entry
                     save_journal_entry(
                         module=module,

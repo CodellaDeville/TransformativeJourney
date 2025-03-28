@@ -38,8 +38,10 @@ def get_img_with_href(img_path, **css):
 def load_css():
     st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Montserrat:wght@400;700&display=swap');
+    
     .main {
-        background: linear-gradient(to bottom right, #0e1117, #1a1f2e);
+        background: linear-gradient(to bottom right, #913923, #c54e2c);
     }
     .stApp header {
         background-color: rgba(0,0,0,0);
@@ -50,17 +52,18 @@ def load_css():
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
-        background-color: rgba(151, 166, 195, 0.1);
+        background-color: rgba(255, 206, 84, 0.1);
         border-radius: 4px 4px 0px 0px;
         gap: 1px;
         padding-left: 10px;
         padding-right: 10px;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(151, 166, 195, 0.2);
+        background-color: rgba(255, 206, 84, 0.3);
     }
     .gradient-text {
-        background: linear-gradient(90deg, #9c27b0, #ff7043);
+        font-family: 'Satisfy', cursive;
+        background: linear-gradient(90deg, #ffcf54, #ffd700);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -74,7 +77,50 @@ def load_css():
         width: 50px;
         height: 50px;
         border-radius: 10px;
-        box-shadow: 0 0 20px rgba(156, 39, 176, 0.3);
+        box-shadow: 0 0 20px rgba(255, 206, 84, 0.3);
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+    }
+    h4 {
+        color: #ffcf54;
+    }
+    /* Button styling */
+    .stButton button {
+        background-color: #ffcf54;
+        color: #913923;
+        font-weight: bold;
+        border: none;
+        border-radius: 30px;
+        padding: 10px 20px;
+    }
+    .stButton button:hover {
+        background-color: #ffd700;
+        box-shadow: 0 0 10px rgba(255, 206, 84, 0.5);
+    }
+    /* Sidebar styling */
+    .css-1d391kg, .css-1lcbmhc {
+        background-color: rgba(145, 57, 35, 0.8);
+    }
+    .stSidebar button {
+        background-color: rgba(255, 206, 84, 0.2);
+        color: #ffcf54;
+        border: 1px solid #ffcf54;
+        border-radius: 30px;
+        text-align: left;
+        width: 100%;
+        margin: 5px 0;
+        transition: all 0.3s;
+    }
+    .stSidebar button:hover {
+        background-color: rgba(255, 206, 84, 0.4);
+        color: white;
+    }
+    /* Input fields */
+    .stTextInput input, .stTextArea textarea, .stSelectbox, .stDateInput {
+        border-radius: 8px;
+        border: 1px solid rgba(255, 206, 84, 0.3);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -91,7 +137,7 @@ icon_html = get_img_with_href(
     width='50px',
     height='50px',
     border_radius='10px',
-    box_shadow='0 0 20px rgba(156, 39, 176, 0.3)'
+    box_shadow='0 0 20px rgba(255, 206, 84, 0.3)'
 )
 
 # Application header with icon

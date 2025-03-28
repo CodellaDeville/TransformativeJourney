@@ -6,114 +6,109 @@ import pandas as pd
 from utils.pdf_generator import PDFGenerator
 import base64
 
-def show_emotion_summary(emotions_data):
-    """Display emotion summary with enhanced visualization."""
+def find_dominant_emotion(emotions):
+    """Safely find the dominant emotion from a dictionary of emotions."""
+    if not emotions or not isinstance(emotions, dict) or len(emotions) == 0:
+        return None
+        
     try:
-        if not emotions_data:
-            st.write("No emotion data available for this period.")
-            return
+        # Sort emotions by value and get the highest one
+        sorted_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)
+        if sorted_emotions:
+            return sorted_emotions[0][0]
+    except Exception:
+        pass
+    
+    return None
 
-        # Prepare data for visualization
-        emotions = {}
-        for entry_emotions in emotions_data:
-            if not entry_emotions or not isinstance(entry_emotions, dict):  # Skip empty or invalid emotion dictionaries
-                continue
-            for emotion, intensity in entry_emotions.items():
-                if emotion in emotions:
-                    emotions[emotion] = max(emotions[emotion], intensity)  # Take the highest intensity
-                else:
-                    emotions[emotion] = intensity
-
-        if emotions and len(emotions) > 0:
-            # Create a color map for emotions
-            emotion_colors = {
-                "joy": "#FFD700",  # Gold
-                "sadness": "#4682B4",  # Steel Blue
-                "anger": "#FF4500",  # Red Orange
-                "fear": "#800080",  # Purple
-                "hope": "#98FB98",  # Pale Green
-                "surprise": "#FF69B4",  # Hot Pink
-                "gratitude": "#DDA0DD",  # Plum
-                "pride": "#FF8C00",  # Dark Orange
-                "love": "#FF1493",  # Deep Pink
-                "anxiety": "#20B2AA"  # Light Sea Green
-            }
-
-            # Create emotion visualization
-            fig = go.Figure()
-
-            # Add radar chart
-            fig.add_trace(go.Scatterpolar(
-                r=list(emotions.values()),
-                theta=list(emotions.keys()),
-                fill='toself',
-                name='Emotions',
-                line_color='rgba(255, 165, 0, 0.8)',  # Orange with some transparency
-                fillcolor='rgba(255, 165, 0, 0.3)'  # Lighter orange with more transparency
-            ))
-
-            # Update layout
-            fig.update_layout(
-                polar=dict(
-                    radialaxis=dict(
-                        visible=True,
-                        range=[0, 100]
-                    )
-                ),
-                showlegend=False,
-                title="Emotional Landscape",
-                height=400
-            )
-
-            # Display the radar chart
-            st.plotly_chart(fig, use_container_width=True)
-
-            # Display dominant emotions
-            col1, col2 = st.columns(2)
-            with col1:
-                # Get top 3 emotions
-                top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:3]
-                st.markdown("### Dominant Emotions")
-                for emotion, intensity in top_emotions:
-                    st.markdown(
-                        f"<div style='padding: 10px; margin: 5px; background-color: {emotion_colors.get(emotion, '#808080')}30;'>"
-                        f"<strong>{emotion.capitalize()}:</strong> {intensity:.1f}%"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-
-            with col2:
-                # Calculate emotional balance
-                positive_emotions = sum(emotions[e] for e in ['joy', 'hope', 'gratitude', 'pride', 'love'] if e in emotions)
-                negative_emotions = sum(emotions[e] for e in ['sadness', 'anger', 'fear', 'anxiety'] if e in emotions)
-                neutral_emotions = sum(emotions[e] for e in ['surprise'] if e in emotions)
+def show_emotion_summary(entries):
+    """Show summary of emotions from journal entries."""
+    if not entries:
+        st.info("No journal entries found for the selected period.")
+        return
+    
+    # Collect emotions across all entries with robust validation
+    all_emotions = {}
+    entries_with_emotions = 0
+    
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+            
+        # Handle different data structures for sentiment
+        sentiment = None
+        if 'sentiment_data' in entry:
+            sentiment = entry['sentiment_data']
+        elif 'sentiment' in entry:
+            sentiment = entry['sentiment']
+        
+        if not sentiment or not isinstance(sentiment, dict):
+            continue
+            
+        emotions = sentiment.get('emotions', {})
+        if not isinstance(emotions, dict) or not emotions:
+            continue
+            
+        # Count entries that actually have emotions data
+        entries_with_emotions += 1
+        
+        # Aggregate emotions
+        for emotion, value in emotions.items():
+            if isinstance(emotion, str) and isinstance(value, (int, float)):
+                all_emotions[emotion] = all_emotions.get(emotion, 0) + value
+    
+    # If we have no valid emotion data, display a message and return
+    if not all_emotions or entries_with_emotions == 0:
+        st.info("No emotion data found in the journal entries for this period.")
+        return
+        
+    # Calculate average emotions
+    avg_emotions = {emotion: value / entries_with_emotions for emotion, value in all_emotions.items()}
+    
+    # Find dominant emotion safely
+    dominant_emotion = find_dominant_emotion(avg_emotions)
+    if dominant_emotion:
+        st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
+    else:
+        st.info("Could not determine dominant emotion from available data.")
+    
+    # Display emotion percentages
+    if avg_emotions:
+        # Create DataFrame for visualization
+        emotion_df = pd.DataFrame({
+            'Emotion': list(avg_emotions.keys()),
+            'Value': list(avg_emotions.values())
+        })
+        
+        if len(emotion_df) > 0:
+            # Sort by value for better visualization
+            emotion_df = emotion_df.sort_values('Value', ascending=False)
+            
+            # Create bar chart
+            try:
+                fig = px.bar(
+                    emotion_df, 
+                    x='Emotion', 
+                    y='Value',
+                    title='Emotion Distribution',
+                    labels={'Value': 'Intensity', 'Emotion': ''},
+                    color='Emotion'
+                )
                 
-                total = positive_emotions + negative_emotions + neutral_emotions
-                if total > 0:
-                    st.markdown("### Emotional Balance")
-                    st.markdown(
-                        f"<div style='padding: 10px; margin: 5px; background-color: #98FB9830;'>"
-                        f"<strong>Positive:</strong> {(positive_emotions/total)*100:.1f}%"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"<div style='padding: 10px; margin: 5px; background-color: #4682B430;'>"
-                        f"<strong>Negative:</strong> {(negative_emotions/total)*100:.1f}%"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"<div style='padding: 10px; margin: 5px; background-color: #DDA0DD30;'>"
-                        f"<strong>Neutral:</strong> {(neutral_emotions/total)*100:.1f}%"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
+                # Customize layout
+                fig.update_layout(
+                    xaxis_title=None,
+                    yaxis_title='Average Intensity',
+                    showlegend=False
+                )
+                
+                st.plotly_chart(fig)
+            except Exception as e:
+                st.error(f"Error creating emotion visualization: {str(e)}")
         else:
-            st.info("No emotional data available for the selected period.")
-    except Exception as e:
-        st.error(f"Error displaying emotion summary: {str(e)}")
-        st.info("No emotional data available for the selected period.")
+            st.info("Not enough data to create emotion visualization.")
+    else:
+        st.info("No emotions data available for visualization.")
 
 def show_weekly_summary():
     st.header("Weekly Summary")
@@ -140,29 +135,44 @@ def show_weekly_summary():
     min_date = default_start
     max_date = default_end
     
-    try:
-        # Try to get actual min/max dates from journal entries if they exist
-        if hasattr(st.session_state, 'journal_entries') and st.session_state.journal_entries:
-            # Check if there are any journal entries with valid dates
+    # Ensure we have journal entries to work with
+    if not hasattr(st.session_state, 'journal_entries') or not st.session_state.journal_entries:
+        st.warning("No journal entries found. Displaying default date range.")
+    else:
+        try:
+            # Extract valid dates from journal entries with thorough validation
             all_dates = []
             for entry in st.session_state.journal_entries:
+                if not isinstance(entry, dict) or 'date' not in entry:
+                    continue
+                    
                 try:
-                    entry_date = datetime.strptime(entry.get('date', ''), '%Y-%m-%d').date()
+                    date_str = entry.get('date', '')
+                    if not date_str or not isinstance(date_str, str):
+                        continue
+                        
+                    entry_date = datetime.strptime(date_str, '%Y-%m-%d').date()
                     all_dates.append(entry_date)
                 except (ValueError, TypeError):
                     continue
-                    
-            if all_dates:  # Only process if we have valid dates
+            
+            # Only update min/max dates if we have valid dates
+            if all_dates:
                 min_date = min(all_dates)
                 max_date = max(all_dates)
                 
                 # Adjust max_date to today if it's in the future
-                if max_date > datetime.now().date():
-                    max_date = datetime.now().date()
-    except Exception as e:
-        st.warning(f"Could not determine date range from journal entries: {str(e)}")
-        # Fallback to defaults if there's any error
-        pass
+                today = datetime.now().date()
+                if max_date > today:
+                    max_date = today
+            else:
+                st.info("No entries with valid dates found. Using default date range.")
+        except Exception as e:
+            st.warning(f"Error determining date range: {str(e)}")
+    
+    # Ensure we always have valid dates even if min_date is after max_date
+    if min_date >= max_date:
+        min_date = max_date - timedelta(days=7)
     
     with col1:
         try:
@@ -204,7 +214,7 @@ def show_weekly_summary():
     
     # Show emotion summary
     st.header("Emotional Overview")
-    show_emotion_summary(emotions_data)
+    show_emotion_summary(entries)
     
     # Display summary metrics
     st.markdown("---")
@@ -303,14 +313,10 @@ def show_weekly_summary():
                 # Display emotions if available
                 if 'emotions' in sentiment and sentiment['emotions']:
                     emotions = sentiment['emotions']
-                    # Double-check that emotions is not empty
-                    if emotions and isinstance(emotions, dict) and len(emotions) > 0:
-                        try:
-                            dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
-                            st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
-                        except (ValueError, KeyError, TypeError):
-                            # Handle the case where emotions is empty or invalid
-                            st.markdown("**Emotion data:** Not available")
+                    # Get dominant emotion safely
+                    dominant_emotion = find_dominant_emotion(emotions)
+                    if dominant_emotion:
+                        st.markdown(f"**Dominant emotion:** {dominant_emotion.capitalize()}")
                     else:
                         st.markdown("**Emotion data:** Not available")
                 else:
