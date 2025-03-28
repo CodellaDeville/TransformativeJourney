@@ -16,51 +16,18 @@ def show_dashboard():
         progress_percentage = get_module_completion_percentage()
         st.subheader("Your Progress")
         
-        # Create progress bar with custom styling
-        progress_fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=progress_percentage,
-            domain={'x': [0, 1], 'y': [0, 1]},
-            title={
-                'text': "Journey Completion",
-                'font': {'size': 16, 'color': '#ffcf54'}
-            },
-            number={'font': {'color': '#ffffff'}},
-            gauge={
-                'axis': {'range': [0, 100], 'tickcolor': "rgba(255, 207, 84, 0.5)"},
-                'bar': {'color': "#ffcf54"},  # Use our gold color for the bar
-                'bgcolor': "rgba(0,0,0,0)",
-                'borderwidth': 0,
-                'steps': [
-                    # Create a multi-step gradient for the bar background
-                    {'range': [0, 5], 'color': "#665500"},                 # Darkest yellow
-                    {'range': [5, 15], 'color': "#887300"},                # Dark yellow
-                    {'range': [15, 30], 'color': "#aa8c00"},               # Medium dark yellow
-                    {'range': [30, 45], 'color': "#ccaa00"},               # Medium yellow
-                    {'range': [45, 60], 'color': "#edc427"},               # Medium light yellow
-                    {'range': [60, 75], 'color': "#f5dc6b"},               # Light yellow
-                    {'range': [75, 90], 'color': "#f9eaa1"},               # Very light yellow
-                    {'range': [90, 100], 'color': "#ffffff"}               # White
-                ],
-                'shape': 'bullet'
-            }
-        ))
+        # Use Streamlit's built-in progress bar instead of Plotly for simplicity
+        st.markdown("""
+        <style>
+        /* Custom styling for progress bar */
+        .stProgress > div > div {
+            background-image: linear-gradient(to right, #665500, #887300, #aa8c00, #ccaa00, #edc427, #f5dc6b, #f9eaa1, #ffffff);
+        }
+        </style>
+        """, unsafe_allow_html=True)
         
-        # Remove the custom gradient overlay that was causing the error
-        # and let the built-in steps create the gradient effect
-        
-        progress_fig.update_layout(
-            height=300,  # Increased height for better spacing
-            margin=dict(l=20, r=20, t=80, b=20),  # Increased top margin
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(
-                color="#ffcf54",
-                size=14
-            )
-        )
-        
-        st.plotly_chart(progress_fig, use_container_width=True)
+        st.markdown(f"### Journey Completion: {progress_percentage:.1f}%")
+        st.progress(progress_percentage / 100.0)
         
         # Display current module information
         st.markdown(f"### Module {st.session_state.current_module}: {get_module_title(st.session_state.current_module)}")
