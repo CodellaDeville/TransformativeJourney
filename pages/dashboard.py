@@ -23,25 +23,52 @@ def show_dashboard():
             domain={'x': [0, 1], 'y': [0, 1]},
             title={
                 'text': "Journey Completion",
-                'font': {'size': 16, 'color': 'white'}
+                'font': {'size': 16, 'color': '#ffcf54'}
             },
+            number={'font': {'color': '#ffffff'}},
             gauge={
-                'axis': {'range': [0, 100]},
-                'bar': {'color': "#9c27b0"},
+                'axis': {'range': [0, 100], 'tickcolor': "rgba(255, 207, 84, 0.5)"},
+                'bar': {'color': "rgba(0,0,0,0)"},  # Make default bar transparent
                 'bgcolor': "rgba(0,0,0,0)",
                 'borderwidth': 0,
                 'steps': [
-                    {'range': [0, 100], 'color': "rgba(151, 166, 195, 0.1)"}
-                ]
+                    # Create a multi-step gradient for the bar
+                    {'range': [0, 5], 'color': "#665500"},                 # Darkest yellow
+                    {'range': [5, 15], 'color': "#887300"},                # Dark yellow
+                    {'range': [15, 30], 'color': "#aa8c00"},               # Medium dark yellow
+                    {'range': [30, 45], 'color': "#ccaa00"},               # Medium yellow
+                    {'range': [45, 60], 'color': "#edc427"},               # Medium light yellow
+                    {'range': [60, 75], 'color': "#f5dc6b"},               # Light yellow
+                    {'range': [75, 90], 'color': "#f9eaa1"},               # Very light yellow
+                    {'range': [90, 100], 'color': "#ffffff"}               # White
+                ],
+                # Add a custom shape to create a smooth gradient overlay
+                'shape': 'bullet'
             }
+        ))
+        
+        # Add a custom shape to simulate a gradient
+        progress_fig.add_trace(go.Scatter(
+            x=[0, progress_percentage/100],
+            y=[0, 0],
+            mode='lines',
+            line=dict(
+                color='rgba(0,0,0,0)',
+                width=20,
+            ),
+            fill='tozeroy',
+            fillcolor=f'linear-gradient(90deg, #665500, #ffffff)',
+            hoverinfo='none',
+            showlegend=False
         ))
         
         progress_fig.update_layout(
             height=300,  # Increased height for better spacing
             margin=dict(l=20, r=20, t=80, b=20),  # Increased top margin
             paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
             font=dict(
-                color="white",
+                color="#ffcf54",
                 size=14
             )
         )
