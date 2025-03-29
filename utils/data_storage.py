@@ -42,6 +42,15 @@ def initialize_session_state():
         
     if 'email_notifications' not in st.session_state:
         st.session_state.email_notifications = False
+        
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = "dashboard"
+        
+    if 'journal_content' not in st.session_state:
+        st.session_state.journal_content = ""
+        
+    if 'conclusion_completed' not in st.session_state:
+        st.session_state.conclusion_completed = False
 
 def save_journal_entry(module, lesson, prompt, content, sentiment_data, themes):
     """

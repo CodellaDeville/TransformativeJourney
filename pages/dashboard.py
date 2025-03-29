@@ -31,6 +31,7 @@ def show_dashboard():
         
         # Display current module information
         st.markdown(f"### Module {st.session_state.current_module}: {get_module_title(st.session_state.current_module)}")
+        st.markdown(f"*{get_module_description(st.session_state.current_module)}*")
         st.markdown(f"**Current Lesson:** {st.session_state.current_lesson}. {get_lesson_title(st.session_state.current_module, st.session_state.current_lesson)}")
         
         # Next steps
@@ -139,49 +140,59 @@ def get_module_completion_percentage():
 def get_module_title(module_number):
     """Return the title for a module."""
     module_titles = [
-        "",  # Module 0 doesn't exist
-        "Understanding Cycles and Patterns",
-        "Examining Beliefs and Conditioning",
-        "Developing Emotional Intelligence",
-        "Cultivating Intuition and Synchronicity",
-        "Intentional Creation"
+        "Module 0",  # We use 1-indexed modules but 0-indexed lists
+        "Introduction",
+        "Learning to Go Beyond Conditioning",
+        "Remembering Your Commitment",
+        "How Choices Influence Change",
+        "Noticing Clarity"
     ]
     
     return module_titles[module_number] if 0 < module_number <= len(module_titles) - 1 else "Unknown Module"
 
+def get_module_description(module_number):
+    """Return the description for a module."""
+    descriptions = {
+        1: "Define and understand the Origin of crises, how to surrender to their teachings and break free from cycles of suffering.",
+        2: "Learn how to manifest a new reality by aligning your actions with your authentic core beliefs and recognize your eternal nature.",
+        3: "Elevate your self-talk, self-care, and communication to stay on the path to transformation and align with your True Self.",
+        4: "Trust in your own intuition, clarify your desire and practice considering your response. Learn how to embrace the opportunity of challenges, and expand your skills to help you self-actualize.",
+        5: "Recognize your role as the creator of your reality, identify the key processes of becoming cognitively aware, and build trust in yourself as you prepare for your continual journey of awareness, evolution, and creating."
+    }
+    return descriptions.get(module_number, "Module description not available.")
+
 def get_lesson_title(module_number, lesson_number):
     """Return the title for a lesson."""
-    # Simplified version - in a real app, this would come from a database or content file
     lesson_titles = {
-        1: {  # Module 1
-            1: "Recognizing Cycles",
-            2: "Identifying Crisis Patterns",
-            3: "Understanding Creation Mode",
-            4: "Breaking Free from Cycles"
+        1: {  # Module 1: Introduction
+            1: "Welcome to Our Course",
+            2: "Defining Crisis",
+            3: "How to Understand Your Conflict",
+            4: "How to Notice Cycles"
         },
-        2: {  # Module 2
-            1: "The Origin of Beliefs",
-            2: "Identifying Limiting Beliefs",
-            3: "Challenging Conditioning",
-            4: "Creating New Beliefs"
+        2: {  # Module 2: Learning to Go Beyond Conditioning
+            1: "Learning to Go Beyond Conditioning",
+            2: "Exploring Your Core Beliefs",
+            3: "Closing the Gap of Cognitive Dissonance",
+            4: "The Source of Creating"
         },
-        3: {  # Module 3
-            1: "Emotions as Information",
-            2: "Working with Difficult Emotions",
-            3: "Emotional Energy",
-            4: "Emotional Intelligence Practices"
+        3: {  # Module 3: Remembering Your Commitment
+            1: "Remembering Your Commitment",
+            2: "Communicating Successfully",
+            3: "Learning to Compartmentalize",
+            4: "Guiding Your Conversation"
         },
-        4: {  # Module 4
-            1: "Recognizing Intuitive Signals",
-            2: "Working with Synchronicities",
-            3: "Deepening Intuitive Practices",
-            4: "Co-creating with the Universe"
+        4: {  # Module 4: How Choices Influence Change
+            1: "How Choices Influence Change",
+            2: "Taking Things Into Consideration",
+            3: "Recognizing the (Co)incidences",
+            4: "Focusing on Competency"
         },
-        5: {  # Module 5
-            1: "Clarifying Intentions",
-            2: "Aligning Energy with Intentions",
-            3: "Taking Inspired Action",
-            4: "Living as a Conscious Creator"
+        5: {  # Module 5: Noticing Clarity
+            1: "Noticing Clarity",
+            2: "Becoming Cognitively Aware",
+            3: "Making the Connection",
+            4: "Feeling the Conversion"
         }
     }
     

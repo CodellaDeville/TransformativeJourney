@@ -21,6 +21,7 @@ from pages.dashboard import show_dashboard
 from pages.journal import show_journal
 from pages.weekly_summary import show_weekly_summary
 from pages.settings import show_settings
+from pages.conclusion import show_conclusion
 
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
@@ -61,6 +62,24 @@ def load_css():
 load_css()
 
 # Initialize session state
+def initialize_session_state():
+    if 'user_name' not in st.session_state:
+        st.session_state.user_name = "User"
+    if 'current_module' not in st.session_state:
+        st.session_state.current_module = 1
+    if 'current_lesson' not in st.session_state:
+        st.session_state.current_lesson = 1
+    if 'completed_lessons' not in st.session_state:
+        st.session_state.completed_lessons = {}
+    if 'journal_entries' not in st.session_state:
+        st.session_state.journal_entries = []
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = "dashboard"
+    if 'journal_content' not in st.session_state:
+        st.session_state.journal_content = ""
+    if 'conclusion_completed' not in st.session_state:
+        st.session_state.conclusion_completed = False
+
 initialize_session_state()
 
 # Get the icon as base64
@@ -109,9 +128,20 @@ def navigation():
     if st.sidebar.button("⚙️ Settings"):
         st.session_state.current_page = "settings"
     
+    # Show Conclusion button only if the user has completed the course
+    if st.session_state.get("conclusion_completed", False):
+        if st.sidebar.button("🎓 Conclusion"):
+            st.session_state.current_page = "conclusion"
+    
     # Initialize current page if not set
     if "current_page" not in st.session_state:
         st.session_state.current_page = "app"
+    
+    # Check if the user has completed all modules/lessons
+    # Module 5, Lesson 4 is the last lesson
+    if st.session_state.current_module == 5 and st.session_state.current_lesson > 4:
+        st.session_state.conclusion_completed = True
+        st.session_state.current_page = "conclusion"
     
     # Show content based on current page
     if st.session_state.current_page == "app":
@@ -133,6 +163,8 @@ def navigation():
         show_weekly_summary()
     elif st.session_state.current_page == "settings":
         show_settings()
+    elif st.session_state.current_page == "conclusion":
+        show_conclusion()
 
 if __name__ == "__main__":
     navigation()

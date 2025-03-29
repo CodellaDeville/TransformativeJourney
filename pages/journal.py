@@ -311,47 +311,46 @@ def show_journal():
 def get_module_title(module_number):
     """Return the title for a module."""
     titles = {
-        1: "Understanding Cycles and Patterns",
-        2: "Examining Beliefs and Conditioning",
-        3: "Developing Emotional Intelligence",
-        4: "Cultivating Intuition and Synchronicity",
-        5: "Intentional Creation"
+        1: "Introduction",
+        2: "Learning to Go Beyond Conditioning",
+        3: "Remembering Your Commitment",
+        4: "How Choices Influence Change",
+        5: "Noticing Clarity"
     }
     return titles.get(module_number, f"Module {module_number}")
 
 def get_lesson_title(module_number, lesson_number):
     """Return the title for a lesson."""
-    # Simplified version - in a real app, this would come from a database or content file
     lesson_titles = {
-        1: {  # Module 1
-            1: "Recognizing Cycles",
-            2: "Identifying Crisis Patterns",
-            3: "Understanding Creation Mode",
-            4: "Breaking Free from Cycles"
+        1: {  # Module 1: Introduction
+            1: "Welcome to Our Course",
+            2: "Defining Crisis",
+            3: "How to Understand Your Conflict",
+            4: "How to Notice Cycles"
         },
-        2: {  # Module 2
-            1: "The Origin of Beliefs",
-            2: "Identifying Limiting Beliefs",
-            3: "Challenging Conditioning",
-            4: "Creating New Beliefs"
+        2: {  # Module 2: Learning to Go Beyond Conditioning
+            1: "Learning to Go Beyond Conditioning",
+            2: "Exploring Your Core Beliefs",
+            3: "Closing the Gap of Cognitive Dissonance",
+            4: "The Source of Creating"
         },
-        3: {  # Module 3
-            1: "Emotions as Information",
-            2: "Working with Difficult Emotions",
-            3: "Emotional Energy",
-            4: "Emotional Intelligence Practices"
+        3: {  # Module 3: Remembering Your Commitment
+            1: "Remembering Your Commitment",
+            2: "Communicating Successfully",
+            3: "Learning to Compartmentalize",
+            4: "Guiding Your Conversation"
         },
-        4: {  # Module 4
-            1: "Recognizing Intuitive Signals",
-            2: "Working with Synchronicities",
-            3: "Deepening Intuitive Practices",
-            4: "Co-creating with the Universe"
+        4: {  # Module 4: How Choices Influence Change
+            1: "How Choices Influence Change",
+            2: "Taking Things Into Consideration",
+            3: "Recognizing the (Co)incidences",
+            4: "Focusing on Competency"
         },
-        5: {  # Module 5
-            1: "Clarifying Intentions",
-            2: "Aligning Energy with Intentions",
-            3: "Taking Inspired Action",
-            4: "Living as a Conscious Creator"
+        5: {  # Module 5: Noticing Clarity
+            1: "Noticing Clarity",
+            2: "Becoming Cognitively Aware",
+            3: "Making the Connection",
+            4: "Feeling the Conversion"
         }
     }
     
@@ -363,39 +362,39 @@ def get_lesson_title(module_number, lesson_number):
 def get_prompt(module, lesson):
     """Return a journaling prompt for the specified module and lesson."""
     prompts = {
-        1: {  # Module 1: Understanding Cycles and Patterns
-            1: "Reflect on a recurring pattern or cycle in your life. What triggers it, and how does it typically unfold?",
-            2: "Describe a recent moment when you felt in 'crisis mode.' What internal and external factors contributed to this experience?",
-            3: "Think of a time when you were in 'creation mode.' What conditions or mindsets enabled this state? How did it feel different from crisis mode?",
-            4: "What specific cycle or pattern would you like to break free from? What keeps this cycle in place, and what might help you step out of it?"
+        1: {  # Module 1: Introduction
+            1: "Reflect on what brings you to this course and what you hope to gain from it.",
+            2: "Think about areas of your life where you feel stagnant or in crisis. Write down any recurring thoughts, feelings, or beliefs contributing to your crisis.",
+            3: "Describe aspects of yourself that you usually hide or avoid. What is your Conflicting self? How do they influence your behavior?",
+            4: "Identify cycles or negative cycles that seem to repeat in your life. List areas where you feel like a victim."
         },
-        2: {  # Module 2: Examining Beliefs and Conditioning
-            1: "Reflect on a core belief you hold about yourself. Where did this belief originate? How has it shaped your experience?",
-            2: "Identify a belief that may be limiting your growth or happiness. How does this belief affect your choices and behaviors?",
-            3: "Consider how your cultural, family, or social conditioning has shaped your response to challenges. What conditioning no longer serves you?",
-            4: "What new belief would support your growth and well-being? How might embracing this belief change your experience?"
+        2: {  # Module 2: Learning to Go Beyond Conditioning
+            1: "Reflect on how your past conditioning affects your present choices. What patterns do you notice?",
+            2: "Examine your core beliefs about yourself and the world. Which ones serve you and which ones limit you?",
+            3: "Where do you experience cognitive dissonance in your life? What beliefs conflict with your actions?",
+            4: "Consider how you might be the creator of your reality. What would you create if you embraced this perspective?"
         },
-        3: {  # Module 3: Developing Emotional Intelligence
-            1: "Describe a significant emotion you've experienced recently. What information might this emotion be offering you?",
-            2: "Reflect on how you typically respond to difficult emotions. What strategies help you process these emotions in healthy ways?",
-            3: "How might you harness emotional energy as a creative force? Describe an emotion that feels particularly energizing to you.",
-            4: "What practice would help you develop greater emotional awareness in your daily life? How might this practice transform your experience?"
+        3: {  # Module 3: Remembering Your Commitment
+            1: "What commitment have you made to yourself that you're finding difficult to honor?",
+            2: "How do you communicate with yourself during challenging times? What language do you use?",
+            3: "In what areas of your life would compartmentalizing be beneficial? How might this help you stay focused?",
+            4: "Think about a difficult conversation you need to have. How could you guide it toward a positive outcome?"
         },
-        4: {  # Module 4: Cultivating Intuition and Synchronicity
-            1: "Describe a time when you experienced a strong intuitive signal. How did it feel, and how did you respond?",
-            2: "Reflect on a meaningful coincidence or synchronicity in your life. What significance did this event hold for you?",
-            3: "What practices help you access your intuitive wisdom? How might you deepen these practices?",
-            4: "How do you distinguish between intuitive guidance and fear-based thinking? What helps you trust your intuition?"
+        4: {  # Module 4: How Choices Influence Change
+            1: "Reflect on a recent choice you made that led to significant change. What did you learn from this?",
+            2: "What factors do you consider when making important decisions? Are there aspects you typically overlook?",
+            3: "Describe coincidences or synchronicities you've experienced. What might they be teaching you?",
+            4: "What skills or competencies would you like to develop further? How would these enhance your life?"
         },
-        5: {  # Module 5: Intentional Creation
-            1: "What intention would you like to set for your life right now? Be as specific as possible about what you want to create or experience.",
-            2: "How aligned are your thoughts, feelings, and actions with your intentions? What shifts might create greater alignment?",
-            3: "What inspired action could you take toward your intention? What makes this action feel inspiring rather than obligatory?",
-            4: "How would your life change if you fully embraced your identity as a conscious creator? What would you do differently?"
+        5: {  # Module 5: Noticing Clarity
+            1: "Describe a moment when you experienced absolute clarity about something important. How did it feel?",
+            2: "How aware are you of your thoughts and their impact on your reality? What helps you stay conscious of them?",
+            3: "Reflect on connections between your thoughts, emotions, and life circumstances. What patterns do you notice?",
+            4: "How have you experienced transformational change in your life? What supported this conversion process?"
         }
     }
     
     if module in prompts and lesson in prompts[module]:
         return prompts[module][lesson]
     else:
-        return "Reflect on your journey so far and what's emerging for you today."
+        return "Reflect on your journey so far. What insights have you gained and how are you applying them?"
